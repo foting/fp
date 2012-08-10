@@ -14,7 +14,7 @@
 
             switch ($credentials) {
                 case "user":
-                    include_once "user_iou.php";
+                    include_once "user_purchase.php";
                     break;
                 case "admin":
                     include_once "admin_dashboard.php";
