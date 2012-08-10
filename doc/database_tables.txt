@@ -1,0 +1,14 @@
+This file documents the database tables used for this project. For each table
+it shows the SQL command used to create the table and a short description
+of each field.
+
+purchase_table:
+
+payment_table:
+
+inventory_table:
+
+user_directory_table:
+
+systembolaget_snapshot_table:
+

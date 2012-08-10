@@ -1,0 +1,2 @@
+This file documents the SQL queries used by the web interface to pull data
+from the database tables documented in: doc/database_tables.txt
