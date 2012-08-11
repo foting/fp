@@ -4,13 +4,18 @@
 
     }
 
-    class FPDB {
+    class FPDB implements Iterator
+    {
+        private $link;
+        private $query_ = False;
+        private $result_ = False;
+        private $position = 0;
 
         function __construct()
         {
             $ok = True;
 
-            $ok = $ok && mysql_connect("steam.it.uu.se", "admin", "fp_at_polacks");
+            $ok = $ok && ($this->link = mysql_connect("steam.it.uu.se", "admin", "fp_at_polacks"));
             $ok = $ok && mysql_select_db("fp_test");
 
             if (!ok) {
@@ -20,22 +25,50 @@
 
         function __destruct()
         {
-            mysql_close();
+            mysql_close($this->link);
         }
 
-        public function query($query, $fetch = False)
+
+        public function query($query)
         {
-            $ok = True;
-
-            $ok = $ok && ($query_result = mysql_query($query));
-            if ($fetch) {
-                $ok = $ok && ($fetch_result = mysql_fetch_assoc($query_result));
-            }
-
-            if (!ok) {
+            $this->query_ = mysql_query($query);
+            if (!$this->query_) {
                 throw new FPDBException(mysql_error());
             }
-            return $fetch_result;
+        }
+
+        public function result()
+        {
+            $this->result_ = mysql_fetch_assoc($this->query_);
+            return $this->result_;
+        }
+
+        /* Iterator interface */
+        public function current()
+        {
+            return $this->result_;
+        }
+
+        public function next()
+        {
+            $this->position += 1;
+            return $this->result();
+        }
+
+        public function rewind()
+        {
+            /* We only allow the iterator to be used once per query. */
+            $this->postition = 0;
+        }
+
+        public function key()
+        {
+            return $this->position;
+        }
+
+        public function valid()
+        {
+            return $this->result_ ? True : False;
         }
 
 
@@ -43,7 +76,8 @@
         {
             /* Assuming that user_name is unique */
             $query = sprintf("SELECT * FROM users WHERE user_name = '%s'", $user_name);
-            return $this->query($query, True);
+            $this->query($query);
+            return $this->result();
         }
 
         public function user_set($user_name, $password, $first_name, $last_name, $email)
@@ -53,15 +87,42 @@
                      (credentials, password, user_name, first_name, last_name, email)
                      VALUES (%d, '%s', '%s', '%s', '%s', '%s')",
                      CRED_USER, md5($password), $user_name, $first_name, $last_name, $email);
-            $this->query($query, False);
+            $this->query($query);
         }
 
-        public function purchase_get()
+
+        public function purchase_get($user_id)
         {
-
+            $query = sprintf("SELECT * FROM purchase WHERE user_id = '%s'", $user_id);
+            $this->query($query);
+            return $this->result();
         }
 
-        public function purchase_set()
+        public function purchase_append($user_id, $beer_id, $timestamp)
+        {
+            $query = sprintf("INSERT INTO purchase (user_id, beer_id, timestamp)
+                     VALUES ('%d', '%d', '%d')", $user_id, $beer_id, $timestamp);
+            $this->query($query);
+        }
+
+
+        public function inventory_get()
+        {
+            /* Return user list instead of inventory for testing purposes */
+            $query = sprintf("SELECT * FROM users");
+            $this->query($query);
+            return $this->result();
+        }
+
+
+        public function snapshot_get($beer_id)
+        {
+            $query = sprintf("SELECT * FROM snapshot WHERE beer_id = '%s'", $beer_id);
+            $this->query($query);
+            return $this->result();
+        }
+
+        public function snapshot_append()
         {
 
         }
