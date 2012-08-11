@@ -98,19 +98,41 @@
             return $this->result();
         }
 
-        public function purchase_append($user_id, $beer_id, $timestamp)
+        public function purchase_append($user_id, $beer_id)
         {
-            $query = sprintf("INSERT INTO beers_sold (user_id, beer_id, timestamp)
-                     VALUES ('%d', '%d', '%d')", $user_id, $beer_id, $timestamp);
+            $query = sprintf("INSERT INTO beers_sold (user_id, beer_id)
+                     VALUES ('%d', '%d')", $user_id, $beer_id);
             $this->query($query);
         }
 
 
         public function inventory_get()
         {
-            /* Return user list instead of inventory for testing purposes */
-            $query = sprintf("SELECT * FROM users");
-            $this->query($query);
+            $q1 = "
+                CREATE TEMPORARY TABLE beers_bought_tmp AS (
+                    SELECT   beer_id, SUM(amount) AS count
+                    FROM     beers_bougth
+                    GROUP BY beer_id
+                )";
+            $q2 = "
+                CREATE TEMPORARY TABLE beers_sold_tmp AS (
+                    SELECT   beer_id, COUNT(beer_id) AS count
+                    FROM     beers_sold
+                    GROUP BY beer_id
+                )";
+            $q3 = "
+                CREATE TEMPORARY TABLE inventory_tmp AS (
+                    SELECT    beers_bought_tmp.beer_id,
+                              COALESCE(beers_bought_tmp.count, 0) - COALESCE(beers_sold_tmp.count, 0) AS count
+                    FROM      beers_bought_tmp
+                    LEFT JOIN beers_sold_tmp ON beers_bought_tmp.beer_id = beers_sold_tmp.beer_id
+                )";
+
+            $this->query($q1);     
+            $this->query($q2);           
+            $this->query($q3);
+
+            $this->query("SELECT * FROM inventory_tmp;");
             return $this->result();
         }
 
@@ -125,9 +147,13 @@
 
         public function snapshot_get($beer_id)
         {
-            $query = sprintf("SELECT * FROM snapshot WHERE beer_id = '%s'", $beer_id);
-            $this->query($query);
-            return $this->result();
+            $foo = array(
+                1 => "Steam",
+                2 => "Punk",
+                3 => "Kung",
+                4 => "Javer"
+            );
+            return array_key_exists($beer_id, $foo) ? $foo[$beer_id] : "Prips";
         }
 
         public function snapshot_append()
