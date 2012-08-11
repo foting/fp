@@ -15,7 +15,7 @@
             } catch (FPDBException $e) {
                 die($e->getMessage());
             }
-            extract($fpdb_result); /* To get: $user_id, $credentials, $password */
+            extract($fpdb_result);
 
             if ($password != md5($posted_passwd)) {
                 /* XXX Handle this. Go back to login page? */
@@ -23,15 +23,17 @@
             }
 
             $_SESSION["user_id"] = $user_id;
+            $_SESSION["first_name"] = $first_name;
+            $_SESSION["last_name"] = $last_name;
             $_SESSION["credentials"] = $credentials;
 
             include_once "credentials.php";
             switch ($credentials) {
                 case CRED_ADMIN:
-                    include_once "admin_dashboard.php";
+                    include_once "admin_welcome.php";
                     break;
                 case CRED_USER:
-                    include_once "user_purchase.php";
+                    include_once "user_welcome.php";
                     break;
                 default:
                     /* XXX Handle error */
