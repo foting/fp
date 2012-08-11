@@ -18,9 +18,8 @@
 
         <?php
             if ($_POST) {
-                $credentials = $_SESSION["credentials"];
-
                 include_once "credentials.php";
+                $credentials = $_SESSION["credentials"];
                 if ($credentials != CRED_ADMIN) {
                     die("BUG: Non-admin user is accessing admin area");
                 }
@@ -31,23 +30,15 @@
                 $user_name = $email;
                 $password = $_POST["password"];
 
-                include_once "my_mysql.php";
-                if (!my_mysql_connect()) {
-                    die("Couldn't connect to database: " . mysql_error());
-                }
-
-                $query = sprintf("INSERT INTO users
-                         (credentials, password, user_name, first_name, last_name, email)
-                         VALUES (%d, '%s', '%s', '%s', '%s', '%s')",
-                         CRED_USER, md5($password), $user_name, $first_name, $last_name, $email);
-
-                if (!mysql_query($query)) {
-                    die("Couldn't add user: " .  mysql_error());
+                include_once "fpdb.php";
+                try {
+                    $fpdb = new FPDB();
+                    $fpdb->user_set($user_name, $password, $first_name, $last_name, $email);
+                } catch (FPDBException $e) {
+                    die($e->getMessage());
                 }
 
                 printf("User %s successfully added to database", $user_name);
-
-                mysql_close();
             }
         ?>
 

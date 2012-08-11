@@ -8,29 +8,14 @@
             $posted_passwd = $_POST["password"];
 
             /* Check password and  credentials */
-            include_once "my_mysql.php";
-            if (!my_mysql_connect()) {
-                die("Couldn't connect to database: " . mysql_error());
+            include_once "fpdb.php";
+            try {
+                $fpdb = new FPDB();
+                $fpdb_result = $fpdb->user_get($posted_name);
+            } catch (FPDBException $e) {
+                die($e->getMessage());
             }
-
-            $query = sprintf("SELECT user_id, credentials, password FROM users
-                              WHERE user_name = '%s';", $posted_name);
-
-            $result = mysql_query($query);
-            if (!$result) {
-                die("Invalid query: " . mysql_error());
-            }
-
-            if (mysql_num_rows($result) < 1) {
-                /* XXX Handle this. Go back to login page? */
-                die("User not found");
-            }
-
-            $record = mysql_fetch_assoc($result);
-            extract($record); /* To get: $user_id, $credentials, $password */
-
-            mysql_free_result($result);
-            mysql_close();
+            extract($fpdb_result); /* To get: $user_id, $credentials, $password */
 
             if ($password != md5($posted_passwd)) {
                 /* XXX Handle this. Go back to login page? */
