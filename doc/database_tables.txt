@@ -26,7 +26,7 @@ CREATE TABLE beers_bougth (
     admin_id    INT,                    /* Admin who bought the beers */
     beer_id     INT,                    /* Id of bought beer */
     amount      INT,                    /* How many were bought */
-    price       INT,                    /* Price (SEK) the day they were bougth */
+    price       DECIMAL(6,2),           /* Price (SEK) the day they were bougth */
     timestamp   TIMESTAMP DEFAULT NOW()
 );
 
