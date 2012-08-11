@@ -1,6 +1,6 @@
-<p>FridayPub Admin's Area</p>
+FridayPub Admin's Area</br>
 
-<a href="admin_useradd.php">add user</a>
-<a href="admin_inventory.php">inventory</a>
+<a href="admin_regbeers.php">REGISTER BEERS</a>
+<a href="admin_useradd.php">ADD USER</a>
 
 <hr>

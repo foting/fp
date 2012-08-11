@@ -1,6 +1,6 @@
-<p>FridayPub User's Area</p>
+FridayPub User's Area</br>
 
-<a href="user_purchase.php">purchase</a>
-<a href="user_iou.php">iou</a>
+<a href="user_buybeer.php">BUY BEER</a>
+<a href="user_iou.php">MY IOU</a>
 
 <hr>

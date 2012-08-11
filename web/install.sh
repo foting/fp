@@ -18,10 +18,10 @@ function install_file {
 install_file "index.html" $INSTALL_DIR
 install_file "login.php" $INSTALL_DIR
 install_file "user_header.php" $INSTALL_DIR
-install_file "user_purchase.php" $INSTALL_DIR
+install_file "user_buybeers.php" $INSTALL_DIR
 install_file "user_iou.php" $INSTALL_DIR
 install_file "admin_header.php" $INSTALL_DIR
-install_file "admin_dashboard.php" $INSTALL_DIR
+install_file "admin_regbeers.php" $INSTALL_DIR
 install_file "admin_useradd.php" $INSTALL_DIR
 
 install_file "fpdb.php" $INSTALL_DIR
