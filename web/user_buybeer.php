@@ -22,8 +22,10 @@
             } catch (FPDBException $e) {
                 die($e->getMessage());
             }
-            foreach ($db as $item) {
-                $beer_id = $item["beer_id"];
+
+            foreach ($db as $inventory_item) {
+                $beer_id = $inventory_item["beer_id"];
+
                 try {
                     $beer = $db->snapshot_get($beer_id);
                 } catch (FPDBException $e) {

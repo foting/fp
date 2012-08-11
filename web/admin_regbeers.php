@@ -9,9 +9,9 @@
 
         <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
             <p>beer_id: <input type="text" required="required" name="beer_id" /></p>
-            <p>amount: <input type="text" required="required" name="amount" /></p>
-            <p>price: <input type="text" required="required" name="price" /></p>
-            <p><input type="submit"/></p>
+            <p>amount:  <input type="text" required="required" name="amount"  /></p>
+            <p>price:   <input type="text" required="required" name="price"   /></p>
+            <p>         <input type="submit"/></p>
         </form>
 
         <?php
@@ -34,6 +34,5 @@
                 }
             }
         ?>
-
     </body>
 </html>

@@ -1,9 +1,5 @@
-This file documents the database tables used for this project. For each table
-it shows the SQL command used to create the table and a short description
-of each field.
-
-
-Tables:
+This file documents the database tables used for this project. It shows the SQL
+command to create the table and a short descriptions of each field.
 
 CREATE TABLE users (
     user_id     INT AUTO_INCREMENT PRIMARY KEY,  /* User ID */
@@ -37,32 +33,3 @@ CREATE TABLE payments (
     timestamp   TIMESTAMP DEFAULT NOW()
 );
 
-
-
-
-Queries:
-
-1) Generate inventory
-
-CREATE TEMPORARY TABLE beers_bought_tmp AS (
-    SELECT   beer_id,
-             SUM(amount) AS count
-    FROM     beers_bougth
-    GROUP BY beer_id
-);
-
-CREATE TEMPORARY TABLE beers_sold_tmp AS (
-    SELECT   beer_id,
-             COUNT(beer_id) AS count
-    FROM     beers_sold
-    GROUP BY beer_id
-);
-
-CREATE TEMPORARY TABLE inventory_tmp AS (
-    SELECT    beers_bought_tmp.beer_id,
-              COALESCE(beers_bought_tmp.count, 0) - COALESCE(beers_sold_tmp.count, 0) AS count 
-    FROM      beers_bought_tmp 
-    LEFT JOIN beers_sold_tmp ON beers_bought_tmp.beer_id = beers_sold_tmp.beer_id;
-);
-
-SELECT * FROM inventory_tmp;

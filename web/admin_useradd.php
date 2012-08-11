@@ -10,10 +10,10 @@
 
         <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
             <p>First Name: <input type="text" required="required" name="first_name" /></p>
-            <p>Last Name: <input type="text" required="required" name="last_name" /></p>
-            <p>Email: <input type="text" required="required" name="email" /></p>
-            <p>Phone: <input type="text" required="required" name="phone" /></p>
-            <p>Password: <input type="text" required="required" name="password" /></p>
+            <p>Last Name:  <input type="text" required="required" name="last_name"  /></p>
+            <p>Email:      <input type="text" required="required" name="email"      /></p>
+            <p>Phone:      <input type="text" required="required" name="phone"      /></p>
+            <p>Password:   <input type="text" required="required" name="password"   /></p>
             <p><input type="submit"/></p>
         </form>
 
@@ -39,6 +39,5 @@
                 printf("User %s successfully added to database", $user_name);
             }
         ?>
-
     </body>
 </html>

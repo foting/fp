@@ -22,6 +22,7 @@
                 die("Wrong password");
             }
 
+            /* XXX We are losing session information */
             session_start();
             $_SESSION["user_id"] = $user_id;
             $_SESSION["first_name"] = $first_name;

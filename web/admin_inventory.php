@@ -12,9 +12,9 @@
                 <th>Beer</th>
                 <th>Amount</th>
             </tr>
+
             <?php
                 include_once "fpdb.php";
-
                 try {
                     $db = new FPDB();
                     $db->inventory_get();
@@ -22,6 +22,7 @@
                     die($e->getMessage());
                 }
 
+                /* For each beer in inventory, insert row a in the table */
                 foreach ($db as $inventory_item) {
                     $beer_id = $inventory_item["beer_id"];
                     $count = $inventory_item["count"];
@@ -35,6 +36,7 @@
                     printf("<tr><td>%s</td><td>%d</td></tr>", $beer, $count);
                 }
             ?>
+
         </table>
     </body>
 </html>
