@@ -24,11 +24,8 @@
                     die("BUG: Non-admin user is accessing admin area");
                 }
 
-                $first_name = $_POST["first_name"];
-                $last_name = $_POST["last_name"];
-                $email = $_POST["email"];
+                extract($_POST); /* $first_name, $last_name, $password, $email*/
                 $user_name = $email;
-                $password = $_POST["password"];
 
                 include_once "fpdb.php";
                 try {
