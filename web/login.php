@@ -8,16 +8,9 @@
             $posted_passwd = $_POST["password"];
 
             /* Check password and  credentials */
-            $db_server = "steam.it.uu.se";
-            $db_user = "admin";
-            $db_passwd = "fp_at_polacks";
-            $db_database = "fp_test";
-
-            if (!mysql_connect($db_server, $db_user, $db_passwd)) {
-                die("Couldn't connect: " . mysql_error());
-            }
-            if (!mysql_select_db($db_database)) {
-                die("Can't use database: " . mysql_error());
+            include_once "my_mysql.php";
+            if (!my_mysql_connect()) {
+                die("Couldn't connect to database: " . mysql_error());
             }
 
             $query = sprintf("SELECT user_id, credentials, password FROM users
@@ -47,9 +40,7 @@
             $_SESSION["user_id"] = $user_id;
             $_SESSION["credentials"] = $credentials;
 
-            define("CRED_ADMIN", 0);
-            define("CRED_USER", 3);
-
+            include_once "credentials.php";
             switch ($credentials) {
                 case CRED_ADMIN:
                     include_once "admin_dashboard.php";
