@@ -7,13 +7,6 @@
             $posted_name = $_POST["user_name"];
             $posted_passwd = $_POST["password"];
 
-            if (!$posted_name) {
-                die("Please enter your user name.");
-            }
-            if (!$posted_passwd) {
-                die("Please enter password user name.");
-            }
-
             /* Check password and  credentials */
             try {
                 include_once "fpdb.php";
