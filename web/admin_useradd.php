@@ -12,6 +12,7 @@
             <p>First Name: <input type="text" required="required" name="first_name" /></p>
             <p>Last Name: <input type="text" required="required" name="last_name" /></p>
             <p>Email: <input type="text" required="required" name="email" /></p>
+            <p>Phone: <input type="text" required="required" name="phone" /></p>
             <p>Password: <input type="text" required="required" name="password" /></p>
             <p><input type="submit"/></p>
         </form>
@@ -24,13 +25,13 @@
                     die("BUG: Non-admin user is accessing admin area");
                 }
 
-                extract($_POST); /* $first_name, $last_name, $password, $email*/
+                extract($_POST);
                 $user_name = $email;
 
                 include_once "fpdb.php";
                 try {
                     $fpdb = new FPDB();
-                    $fpdb->user_set($user_name, $password, $first_name, $last_name, $email);
+                    $fpdb->user_set($user_name, $password, $first_name, $last_name, $email, $phone);
                 } catch (FPDBException $e) {
                     die($e->getMessage());
                 }

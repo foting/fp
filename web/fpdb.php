@@ -80,13 +80,13 @@
             return $this->result();
         }
 
-        public function user_set($user_name, $password, $first_name, $last_name, $email)
+        public function user_append($user_name, $password, $first_name, $last_name, $email, $phone)
         {
             include_once "credentials.php";
             $query = sprintf("INSERT INTO users
-                     (credentials, password, user_name, first_name, last_name, email)
-                     VALUES (%d, '%s', '%s', '%s', '%s', '%s')",
-                     CRED_USER, md5($password), $user_name, $first_name, $last_name, $email);
+                     (credentials, password, user_name, first_name, last_name, email, phone)
+                     VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s')",
+                     CRED_USER, md5($password), $user_name, $first_name, $last_name, $email, $phone);
             $this->query($query);
         }
 

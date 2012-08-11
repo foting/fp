@@ -2,13 +2,64 @@ This file documents the database tables used for this project. For each table
 it shows the SQL command used to create the table and a short description
 of each field.
 
-purchase_table:
 
-payment_table:
+Tables:
 
-inventory_table:
+CREATE TABLE users (
+    user_id     INT AUTO_INCREMENT PRIMARY KEY,  /* User ID */
+    credentials TINYINT,                         /* Users credentials 0:admin 3:customer */
+    password    CHAR(32),                        /* md5 hashed password */
+    user_name   CHAR(255),
+    first_name  CHAR(255),
+    last_name   CHAR(255),
+    email       CHAR(255),
+    phone       CHAR(32)
+);
 
-user_directory_table:
+CREATE TABLE beers_sold (
+    user_id     INT,                    /* User the beer was sold to */
+    beer_id     INT,                    /* Id of the sold beer */
+    timestamp   TIMESTAMP DEFAULT NOW()
+);
 
-systembolaget_snapshot_table:
+CREATE TABLE beers_bougth (
+    admin_id    INT,                    /* Admin who bought the beers */
+    beer_id     INT,                    /* Id of bought beer */
+    amount      INT,                    /* How many were bought */
+    price       INT,                    /* Price (SEK) the day they were bougth */
+    timestamp   TIMESTAMP DEFAULT NOW()
+);
 
+CREATE TABLE payments (
+    user_id     INT,                    /* User who made payment */
+    admin_id    INT,                    /* Admin that accepted payment */
+    amount      INT,                    /* Amount user payed (SEK) */
+    timestamp   TIMESTAMP DEFAULT NOW()
+);
+
+
+
+
+Queries:
+
+1) Generate inventory
+
+CREATE TEMPORARY TABLE beers_bought_tmp AS (
+    SELECT   beer_id, SUM(amount) AS count
+    FROM     inventory
+    GROUP BY beer_id
+);
+
+CREATE TEMPORARY TABLE beers_sold_tmp AS (
+    SELECT   beer_id, COUNT(beer_id) AS count
+    FROM     purchases
+    GROUP BY beer_id
+);
+
+CREATE TEMPORARY TABLE inventory_tmp AS (
+    SELECT    beers_bought_tmp.beer_id, (beers_bought_tmp.count - beers_sold_tmp.count) AS count 
+    FROM      beers_bought_tmp 
+    LEFT JOIN beers_sold_tmp ON beers_bought_tmp.beer_id = beers_sold_tmp.beer_id;
+);
+
+SELECT * FROM inventory_tmp;
