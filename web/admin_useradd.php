@@ -31,7 +31,7 @@
                 include_once "fpdb.php";
                 try {
                     $fpdb = new FPDB();
-                    $fpdb->user_set($user_name, $password, $first_name, $last_name, $email, $phone);
+                    $fpdb->user_append($user_name, $password, $first_name, $last_name, $email, $phone);
                 } catch (FPDBException $e) {
                     die($e->getMessage());
                 }
