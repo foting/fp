@@ -93,14 +93,14 @@
 
         public function purchase_get($user_id)
         {
-            $query = sprintf("SELECT * FROM purchase WHERE user_id = '%s'", $user_id);
+            $query = sprintf("SELECT * FROM beers_sold WHERE user_id = '%s'", $user_id);
             $this->query($query);
             return $this->result();
         }
 
         public function purchase_append($user_id, $beer_id, $timestamp)
         {
-            $query = sprintf("INSERT INTO purchase (user_id, beer_id, timestamp)
+            $query = sprintf("INSERT INTO beers_sold (user_id, beer_id, timestamp)
                      VALUES ('%d', '%d', '%d')", $user_id, $beer_id, $timestamp);
             $this->query($query);
         }
@@ -113,6 +113,14 @@
             $this->query($query);
             return $this->result();
         }
+
+        public function inventory_append($user_id, $beer_id, $amount, $price)
+        {
+            $query = sprintf("INSERT INTO beers_bougth (admin_id, beer_id, amount, price)
+                    VALUES ('%d', '%d', '%d', '%.2f')", $user_id, $beer_id, $amount, $price);
+            $this->query($query);
+        }
+
 
 
         public function snapshot_get($beer_id)
