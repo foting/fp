@@ -17,6 +17,8 @@
         <?php
             if ($_POST) {
                 include_once "credentials.php";
+
+                session_start();
                 $credentials = $_SESSION["credentials"];
                 if ($credentials != CRED_ADMIN) {
                     die("BUG: Non-admin user is accessing admin area");
@@ -25,8 +27,9 @@
                 $user_id = $_SESSION["user_id"];
                 extract($_POST);
 
-                include_once "fpdb.php";
                 try {
+                    include_once "fpdb.php";
+
                     $fpdb = new FPDB();
                     $fpdb->inventory_append($user_id, $beer_id, $amount, $price);
                 } catch (FPDBException $e) {

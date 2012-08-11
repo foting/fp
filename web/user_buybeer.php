@@ -40,18 +40,18 @@
 
             /* Record beer purchase in the database. */
             if ($_POST) {
+                session_start();
                 $user_id = $_SESSION["user_id"];
                 $beer_id = $_POST["beer_id"];
 
                 try {
                     $db->purchase_append($user_id, $beer_id);
-                    $user = $db->user_get($user_id);
-                    $beer = $db->snapshot_get($beer_id);
                 } catch (FPDBException $e) {
                     die($e->getMessage());
                 }
 
-                printf("One large %s sold to %s %s<br/>", $beer, $user["first_name"], $user["last_name"]);
+                printf("One large beer sold to %s %s<br/>",
+                    $_SESSION["first_name"], $_SESSION["last_name"]);
             }
         ?>
     </body>
