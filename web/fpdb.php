@@ -155,7 +155,7 @@
             $this->query($query);
         }
 
-        public function iou_get()
+        public function iou_get($user_id = 0)
         {
             $q1 = "
                 CREATE TEMPORARY TABLE time_charged_tmp AS (
@@ -220,7 +220,11 @@
             $this->query($q4);
             $this->query($q5);
 
-            $this->query("SELECT * FROM iou_tmp;");
+            if ($user_id) {
+                $this->query("SELECT * FROM iou_tmp WHERE user_id = %d;", $user_id);
+            } else {
+                $this->query("SELECT * FROM iou_tmp;");
+            }
             return $this->result();
         }
 
