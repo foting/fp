@@ -18,7 +18,6 @@
             if ($_POST) {
                 include_once "credentials.php";
 
-                session_start();
                 $credentials = $_SESSION["credentials"];
                 if ($credentials != CRED_ADMIN) {
                     die("BUG: Non-admin user is accessing admin area");

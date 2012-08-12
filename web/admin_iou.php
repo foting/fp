@@ -9,7 +9,7 @@
 
         <table border="1">
             <tr>
-                <th>user_name</th>
+                <th>username</th>
                 <th>first_name</th>
                 <th>last_name</th>
                 <th>amount</th>
@@ -37,7 +37,7 @@
                     }
 
                     printf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>", 
-                        $user_name, $first_name, $last_name, $amount);
+                        $username, $first_name, $last_name, $amount);
                 }
             ?>
         </table>

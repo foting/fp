@@ -72,21 +72,21 @@
         }
 
 
-        public function user_get($user_name)
+        public function user_get($username)
         {
-            /* Assuming that user_name is unique */
-            $query = sprintf("SELECT * FROM users WHERE user_name = '%s'", $user_name);
+            /* Assuming that username is unique */
+            $query = sprintf("SELECT * FROM users WHERE username = '%s'", $username);
             $this->query($query);
             return $this->result();
         }
 
-        public function user_append($user_name, $password, $first_name, $last_name, $email, $phone)
+        public function user_append($username, $password, $first_name, $last_name, $email, $phone)
         {
             include_once "credentials.php";
             $query = sprintf("INSERT INTO users
-                     (credentials, password, user_name, first_name, last_name, email, phone)
+                     (credentials, password, username, first_name, last_name, email, phone)
                      VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s')",
-                     CRED_USER, md5($password), $user_name, $first_name, $last_name, $email, $phone);
+                     CRED_USER, md5($password), $username, $first_name, $last_name, $email, $phone);
             $this->query($query);
         }
 
@@ -106,9 +106,9 @@
         }
 
 
-        public function payment_append($user_name, $admin_name, $amount)
+        public function payment_append($username, $admin_name, $amount)
         {
-            $q1 = sprintf("SELECT user_id FROM users WHERE user_name = '%s'", $user_name);
+            $q1 = sprintf("SELECT user_id FROM users WHERE username = '%s'", $username);
             $this->query($q1);
             $user = $this->result();
 
@@ -174,7 +174,7 @@
                 CREATE TEMPORARY TABLE beers_sold_at_price_tmp AS (
                     SELECT  tc.user_id,
                             tc.beer_id,
-                            u.user_name,
+                            u.username,
                             u.first_name,
                             u.last_name,
                             bb.price
@@ -187,7 +187,7 @@
             $q3 = "
                 CREATE TEMPORARY TABLE beers_bougth_total_tmp AS (
                     SELECT  user_id,
-                            user_name,
+                            username,
                             first_name,
                             last_name,
                             SUM(price) AS amount
@@ -205,7 +205,7 @@
             $q5 = "
                 CREATE TEMPORARY TABLE iou_tmp AS (
                     SELECT  bb.user_id,
-                            bb.user_name,
+                            bb.username,
                             bb.first_name,
                             bb.last_name,
                             COALESCE(bb.amount, 0) - COALESCE(pa.total, 0) AS amount
@@ -221,7 +221,7 @@
             $this->query($q5);
 
             if ($user_id) {
-                $this->query("SELECT * FROM iou_tmp WHERE user_id = %d;", $user_id);
+                $this->query("SELECT * FROM iou_tmp WHERE user_id = " . $user_id);
             } else {
                 $this->query("SELECT * FROM iou_tmp;");
             }

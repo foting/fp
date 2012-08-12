@@ -40,7 +40,6 @@
 
             /* Record beer purchase in the database. */
             if ($_POST) {
-                session_start();
                 $user_id = $_SESSION["user_id"];
                 $beer_id = $_POST["beer_id"];
 

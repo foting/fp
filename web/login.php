@@ -4,28 +4,29 @@
     </head>
     <body>
         <?php
-            $posted_name = $_POST["user_name"];
-            $posted_passwd = $_POST["password"];
+            session_start() || die("Failed to start session.");
+
+            $username = $_POST["username"];
+            $password = $_POST["password"];
 
             /* Check password and  credentials */
             try {
                 include_once "fpdb.php";
                 $db = new FPDB();
-                $user = $db->user_get($posted_name);
+                $user = $db->user_get($username);
             } catch (FPDBException $e) {
                 die($e->getMessage());
             }
 
             if (!$user) {
-                die("Unknown user name.");
+                die("Unknown username: " . $username);
             }
 
-            if ($user["password"] != md5($posted_passwd)) {
-                die("Forgot your password? Sorry your fucked.");
+            if ($user["password"] != md5($password)) {
+                die("Did you forget your password? Sorry your fucked.");
             }
 
-            /* XXX We are losing session information */
-            session_start();
+            $_SESSION["username"] = $username;
             $_SESSION["user_id"] = $user["user_id"];
             $_SESSION["first_name"] = $user["first_name"];
             $_SESSION["last_name"] = $user["last_name"];

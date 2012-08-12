@@ -26,17 +26,17 @@
                 }
 
                 extract($_POST);
-                $user_name = $email;
+                $username = $email;
 
                 include_once "fpdb.php";
                 try {
                     $fpdb = new FPDB();
-                    $fpdb->user_append($user_name, $password, $first_name, $last_name, $email, $phone);
+                    $fpdb->user_append($username, $password, $first_name, $last_name, $email, $phone);
                 } catch (FPDBException $e) {
                     die($e->getMessage());
                 }
 
-                printf("User %s successfully added to database", $user_name);
+                printf("User %s successfully added to database", $username);
             }
         ?>
     </body>

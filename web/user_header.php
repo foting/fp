@@ -1,6 +1,9 @@
-FridayPub User's Area</br>
+<?php
+    session_start() or die("Couldn't start session");
+    $username = $_SESSION["username"];
 
-<a href="user_buybeer.php">BUY BEER</a>
-<a href="user_iou.php">MY IOU</a>
-
-<hr>
+    echo "FridayPub User's Area - logged in as: ${username}</br>";
+?>
+    <a href="user_buybeer.php">BUY BEER</a>
+    <a href="user_iou.php">MY IOU</a>
+    <hr>

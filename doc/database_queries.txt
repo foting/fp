@@ -46,7 +46,7 @@ CREATE TEMPORARY TABLE time_charged_tmp AS (
 CREATE TEMPORARY TABLE beers_sold_at_price_tmp AS (
     SELECT tc.user_id,
            tc.beer_id,
-           u.user_name,
+           u.username,
            u.first_name,
            u.last_name,
            bb.price
@@ -59,7 +59,7 @@ CREATE TEMPORARY TABLE beers_sold_at_price_tmp AS (
 
 CREATE TEMPORARY TABLE beers_bougth_total_tmp AS (
     SELECT user_id,
-           user_name,
+           username,
            first_name,
            last_name,
            SUM(price) AS amount
@@ -77,7 +77,7 @@ CREATE TEMPORARY TABLE payments_total_tmp AS (
 
 CREATE TEMPORARY TABLE iou_tmp AS (
     SELECT    bb.user_id,
-              bb.user_name,
+              bb.username,
               bb.first_name,
               bb.last_name,
               COALESCE(bb.amount, 0) - COALESCE(pa.total, 0) AS amount

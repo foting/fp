@@ -5,7 +5,7 @@ CREATE TABLE users (
     user_id     INT AUTO_INCREMENT PRIMARY KEY,  /* User ID */
     credentials TINYINT,                         /* Users credentials 0:admin 3:customer */
     password    CHAR(32),                        /* md5 hashed password */
-    user_name   CHAR(255),
+    username    CHAR(255),
     first_name  CHAR(255),
     last_name   CHAR(255),
     email       CHAR(255),
@@ -20,7 +20,7 @@ CREATE TABLE beers_sold (
 
 CREATE TABLE beers_bougth (
     admin_id    INT,                    /* Admin who bought the beers */
-    beer_id     INT,                    /* Id of bought beer */
+    beer_id     INT PRIMARY KEY,         /* Id of bought beer */
     amount      INT,                    /* How many were bought */
     price       DECIMAL(6,2),           /* Price (SEK) the day they were bougth */
     timestamp   TIMESTAMP DEFAULT NOW()
