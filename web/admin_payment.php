@@ -8,7 +8,7 @@
             include_once "fpdb.php";
 
             try {
-                $db = new FPDB();
+                $db = new FPDB($_SESSION["credentials"]);
             } catch (FPDBException $e) {
                 die($e->getMessage());
             }
@@ -35,13 +35,6 @@
 
         <?php
             if (isset($_POST["submit"])) {
-                include_once "credentials.php";
-
-                $credentials = $_SESSION["credentials"];
-                if ($credentials != CRED_ADMIN) {
-                    die("BUG: Non-admin user is accessing admin area");
-                }
-
                 $admin_id = $_SESSION["user_id"];
                 extract($_POST);
 

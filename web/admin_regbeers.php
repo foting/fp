@@ -4,7 +4,8 @@
     </head>
     <body>
         <?php
-            include_once "admin_header.php"
+            include_once "admin_header.php";
+            include_once "fpdb.php";
         ?>
 
         <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
@@ -25,20 +26,11 @@
 
         <?php
             if (isset($_POST["submit"])) {
-                include_once "credentials.php";
-
-                $credentials = $_SESSION["credentials"];
-                if ($credentials != CRED_ADMIN) {
-                    die("BUG: Non-admin user is accessing admin area");
-                }
-
                 $user_id = $_SESSION["user_id"];
                 extract($_POST);
 
                 try {
-                    include_once "fpdb.php";
-
-                    $db = new FPDB();
+                    $db = new FPDB($_SESSION["credentials"]);
                     $db->inventory_append($user_id, $beer_id, $amount, $price);
                 } catch (FPDBException $e) {
                     die($e->getMessage());

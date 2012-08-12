@@ -1,8 +1,14 @@
 <?php
+    include_once "credentials.php";
+    
     session_start() or die("Couldn't start session");
-    $username = $_SESSION["username"];
 
-    echo "FridayPub Admin's Area - logged in as: ${username}</br>";
+    $credentials = $_SESSION["credentials"];
+    if ($credentials != CRED_ADMIN) {
+        die("BUG: Non-admin user is accessing admin area");
+    }
+
+    echo "FridayPub Admin's Area - logged in as: ${_SESSION["username"]}</br>";
 ?>
     <a href="admin_inventory.php">INVENTORY</a>
     <a href="admin_iou.php">IOU</a>

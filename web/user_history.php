@@ -12,7 +12,7 @@
             $user_id = $_SESSION["user_id"];
             
             try {
-                $db = new FPDB();
+                $db = new FPDB($_SESSION["credentials"]);
             } catch (FPDBException $e) {
                 die($e->getMessage());
             }

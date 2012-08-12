@@ -5,7 +5,7 @@
     <body>
         <?php
             include_once "admin_header.php";
-
+            include_once "fpdb.php";
         ?>
 
         <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
@@ -19,19 +19,11 @@
 
         <?php
             if (isset($_POST["submit"])) {
-                include_once "credentials.php";
-                $credentials = $_SESSION["credentials"];
-                if ($credentials != CRED_ADMIN) {
-                    die("BUG: Non-admin user is accessing admin area");
-                }
-
                 extract($_POST);
-                $username = $email;
 
-                include_once "fpdb.php";
                 try {
-                    $fpdb = new FPDB();
-                    $fpdb->user_append($username, $password, $first_name, $last_name, $email, $phone);
+                    $db = new FPDB($_SESSION["credentials"]);
+                    $db->user_append($username, $password, $first_name, $last_name, $email, $phone);
                 } catch (FPDBException $e) {
                     die($e->getMessage());
                 }

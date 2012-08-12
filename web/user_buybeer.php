@@ -10,7 +10,7 @@
             include_once "snapshot_hack.php";
 
             try {
-                $db = new FPDB();
+                $db = new FPDB($_SESSION["credentials"]);
             } catch (FPDBException $e) {
                 die($e->getMessage());
             }

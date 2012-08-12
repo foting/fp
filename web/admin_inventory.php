@@ -18,7 +18,7 @@
             <?php
                 include_once "fpdb.php";
                 try {
-                    $db = new FPDB();
+                    $db = new FPDB($_SESSION["credentials"]);
                     $db->inventory_get();
                 } catch (FPDBException $e) {
                     die($e->getMessage());
