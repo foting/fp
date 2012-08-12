@@ -106,6 +106,18 @@
         }
 
 
+        public function payment_append($user_name, $admin_name, $amount)
+        {
+            $q1 = sprintf("SELECT user_id FROM users WHERE user_name = '%s'", $user_name);
+            $this->query($q1);
+            $user = $this->result();
+
+            $q2 = sprintf("INSERT INTO payments (user_id, admin_id, amount)
+                  VALUES ('%d', '%d', '%d')", $user["user_id"], $admin_name, $amount);
+            $this->query($q2);
+        }
+
+
         public function inventory_get()
         {
             $q1 = "
@@ -143,6 +155,74 @@
             $this->query($query);
         }
 
+        public function iou_get()
+        {
+            $q1 = "
+                CREATE TEMPORARY TABLE time_charged_tmp AS (
+                    SELECT  bs.user_id,
+                            bs.beer_id,
+                            bs.timestamp AS time_sold,
+                            (SELECT MAX(bb.timestamp)
+                                FROM   beers_bougth bb
+                                WHERE  bb.beer_id = bs.beer_id and
+                                bb.timestamp <= bs.timestamp
+                            ) as time_bougth
+                    FROM beers_sold bs
+                    ORDER BY bs.user_id
+                )";
+            $q2 = "
+                CREATE TEMPORARY TABLE beers_sold_at_price_tmp AS (
+                    SELECT  tc.user_id,
+                            tc.beer_id,
+                            u.user_name,
+                            u.first_name,
+                            u.last_name,
+                            bb.price
+                    FROM    time_charged_tmp tc,
+                            beers_bougth bb, users u
+                    WHERE   tc.beer_id = bb.beer_id and
+                            tc.time_bougth = bb.timestamp and
+                    u.user_id = tc.user_id
+                )";
+            $q3 = "
+                CREATE TEMPORARY TABLE beers_bougth_total_tmp AS (
+                    SELECT  user_id,
+                            user_name,
+                            first_name,
+                            last_name,
+                            SUM(price) AS amount
+                    FROM beers_sold_at_price_tmp
+                    GROUP BY user_id
+                    ORDER BY amount DESC
+                )";
+            $q4 = "
+                CREATE TEMPORARY TABLE payments_total_tmp AS (
+                    SELECT  user_id,
+                            SUM(amount) as total
+                    FROM payments
+                    GROUP BY user_id
+                )";
+            $q5 = "
+                CREATE TEMPORARY TABLE iou_tmp AS (
+                    SELECT  bb.user_id,
+                            bb.user_name,
+                            bb.first_name,
+                            bb.last_name,
+                            COALESCE(bb.amount, 0) - COALESCE(pa.total, 0) AS amount
+                    FROM      beers_bougth_total_tmp bb
+                    LEFT JOIN payments_total_tmp pa
+                    ON        bb.user_id = pa.user_id
+                )";
+            
+            $this->query($q1);
+            $this->query($q2);
+            $this->query($q3);
+            $this->query($q4);
+            $this->query($q5);
+
+            $this->query("SELECT * FROM iou_tmp;");
+            return $this->result();
+        }
 
 
         public function snapshot_get($beer_id)

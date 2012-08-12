@@ -11,7 +11,8 @@ CREATE TEMPORARY TABLE beers_bought_tmp AS (
 );
 
 CREATE TEMPORARY TABLE beers_sold_tmp AS (
-    SELECT   beer_id,
+    SELECT   user_id,
+             beer_id,
              COUNT(beer_id) AS count
     FROM     beers_sold
     GROUP BY beer_id
@@ -25,3 +26,62 @@ CREATE TEMPORARY TABLE inventory_tmp AS (
 );
 
 SELECT * FROM inventory_tmp;
+
+
+2) Generate IOU list 
+
+CREATE TEMPORARY TABLE time_charged_tmp AS (
+    SELECT bs.user_id,
+           bs.beer_id,
+           bs.timestamp AS time_sold,
+           (SELECT MAX(bb.timestamp)
+            FROM   beers_bougth bb
+            WHERE  bb.beer_id = bs.beer_id and
+                   bb.timestamp <= bs.timestamp
+           ) as time_bougth
+    FROM beers_sold bs
+    ORDER BY bs.user_id
+);
+
+CREATE TEMPORARY TABLE beers_sold_at_price_tmp AS (
+    SELECT tc.user_id,
+           tc.beer_id,
+           u.user_name,
+           u.first_name,
+           u.last_name,
+           bb.price
+    FROM   time_charged_tmp tc,
+           beers_bougth bb, users u
+    WHERE  tc.beer_id = bb.beer_id and
+           tc.time_bougth = bb.timestamp and
+           u.user_id = tc.user_id
+);
+
+CREATE TEMPORARY TABLE beers_bougth_total_tmp AS (
+    SELECT user_id,
+           user_name,
+           first_name,
+           last_name,
+           SUM(price) AS amount
+           FROM beers_sold_at_price_tmp
+           GROUP BY user_id
+           ORDER BY amount DESC
+);
+
+CREATE TEMPORARY TABLE payments_total_tmp AS (
+    SELECT user_id,
+           SUM(amount) as total
+    FROM payments
+    GROUP BY user_id
+);
+
+CREATE TEMPORARY TABLE iou_tmp AS (
+    SELECT    bb.user_id,
+              bb.user_name,
+              bb.first_name,
+              bb.last_name,
+              COALESCE(bb.amount, 0) - COALESCE(pa.total, 0) AS amount
+    FROM      beers_bougth_total_tmp bb
+    LEFT JOIN payments_total_tmp pa ON bb.user_id = pa.user_id
+);
+
