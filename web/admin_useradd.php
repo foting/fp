@@ -14,11 +14,11 @@
             <p>Email:      <input type="text" required="required" name="email"      /></p>
             <p>Phone:      <input type="text" required="required" name="phone"      /></p>
             <p>Password:   <input type="text" required="required" name="password"   /></p>
-            <p><input type="submit"/></p>
+            <p><input type="submit" name="submit" value="Register"/></p>
         </form>
 
         <?php
-            if ($_POST) {
+            if (isset($_POST["submit"])) {
                 include_once "credentials.php";
                 $credentials = $_SESSION["credentials"];
                 if ($credentials != CRED_ADMIN) {

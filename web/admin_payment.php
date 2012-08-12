@@ -34,7 +34,7 @@
         </form>
 
         <?php
-            if ($_POST) {
+            if (isset($_POST["submit"])) {
                 include_once "credentials.php";
 
                 $credentials = $_SESSION["credentials"];

@@ -8,14 +8,23 @@
         ?>
 
         <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
-            <p>beer_id: <input type="text" required="required" name="beer_id" /></p>
-            <p>amount:  <input type="text" required="required" name="amount"  /></p>
-            <p>price:   <input type="text" required="required" name="price"   /></p>
-            <p>         <input type="submit"/></p>
+            <table>
+                <tr>
+                    <td> beer_id </td>
+                    <td> amount </td>
+                    <td> price </td>
+                </tr>
+                <tr>
+                    <td><input type="text" required="required" name="beer_id"/></td>
+                    <td><input type="text" required="required" name="amount"/></td>
+                    <td><input type="text" required="required" name="price"/></td>
+                    <td><input type="submit" name="submit" value="Register"/></td>
+                </tr>
+            </table>
         </form>
 
         <?php
-            if ($_POST) {
+            if (isset($_POST["submit"])) {
                 include_once "credentials.php";
 
                 $credentials = $_SESSION["credentials"];
@@ -29,8 +38,8 @@
                 try {
                     include_once "fpdb.php";
 
-                    $fpdb = new FPDB();
-                    $fpdb->inventory_append($user_id, $beer_id, $amount, $price);
+                    $db = new FPDB();
+                    $db->inventory_append($user_id, $beer_id, $amount, $price);
                 } catch (FPDBException $e) {
                     die($e->getMessage());
                 }

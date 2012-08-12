@@ -35,11 +35,11 @@
                 printf("<input type=\"radio\" name=\"beer_id\" value=%d> %s </br>",  $beer_id, $beer);
             }
 
-            printf("<input type=\"submit\"/>");
+            printf("<input type=\"submit\" name=\"submit\" value=\"Register\"/>");
             printf("</form>");
 
             /* Record beer purchase in the database. */
-            if ($_POST) {
+            if (isset($_POST["submit"])) {
                 $user_id = $_SESSION["user_id"];
                 $beer_id = $_POST["beer_id"];
 
