@@ -9,9 +9,10 @@
     }
 
     echo "FridayPub Admin's Area</br>";
-    echo "Logged in as: <b>${_SESSION["username"]}</b> </br>";
+    echo "Logged in as: <b>${_SESSION["username"]}</b>";
 ?>
 
+<a href="logout.php">(logout)</a> </br>
 <a href="admin_inventory.php">INVENTORY</a>
 <a href="admin_iou.php">IOU</a>
 <a href="admin_regbeers.php">REGISTER BEERS</a>
