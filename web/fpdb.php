@@ -36,33 +36,33 @@
                     break;
             }
 
-            $ok = $ok && ($this->link = mysql_connect(
+            $ok = $ok && ($this->link = mysqli_connect(
                 $dbn["server"], $dbn["username"], $dbn["password"]));
 
-            $ok = $ok && mysql_select_db($dbn["database"]);
+            $ok = $ok && mysqli_select_db($dbn["database"]);
 
             if (!$ok) {
-                throw new FPDBException(mysql_error());
+                throw new FPDBException(mysqli_error());
             }
         }
 
         function __destruct()
         {
-            mysql_close($this->link);
+            mysqli_close($this->link);
         }
 
 
         public function query($query)
         {
-            $this->query_ = mysql_query($query);
+            $this->query_ = mysqli_real_escape_string(mysqli_query($query));
             if (!$this->query_) {
-                throw new FPDBException(mysql_error());
+                throw new FPDBException(mysqli_error());
             }
         }
 
         public function result()
         {
-            $this->result_ = mysql_fetch_assoc($this->query_);
+            $this->result_ = mysqli_fetch_assoc($this->query_);
             return $this->result_;
         }
 
