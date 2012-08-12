@@ -51,8 +51,7 @@
                     die($e->getMessage());
                 }
 
-                printf("Payment of %d registered for %s\n",
-                        $amount, $username);
+                printf("Payment registered for %d kr\n", $amount);
             }
         ?>
     </body>
