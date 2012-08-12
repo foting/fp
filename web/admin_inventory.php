@@ -5,6 +5,8 @@
     <body>
         <?php
             include_once "admin_header.php";
+
+            include_once "snapshot_hack.php";
         ?>
 
         <table border="1">
@@ -27,13 +29,8 @@
                     $beer_id = $inventory_item["beer_id"];
                     $count = $inventory_item["count"];
 
-                    try {
-                        $beer = $db->snapshot_get($beer_id);
-                    } catch (FPDBException $e) {
-                        die($e->getMessage());
-                    }
-
-                    printf("<tr><td>%s</td><td>%d</td></tr>", $beer, $count);
+                    printf("<tr><td>%s</td><td>%d</td></tr>",
+                        beer_name($beer_id), $count);
                 }
             ?>
 

@@ -233,23 +233,6 @@
             }
             return $this->result();
         }
-
-
-        public function snapshot_get($beer_id)
-        {
-            $foo = array(
-                1 => "Steam",
-                2 => "Punk",
-                3 => "Kung",
-                4 => "Javer"
-            );
-            return array_key_exists($beer_id, $foo) ? $foo[$beer_id] : "Prips";
-        }
-
-        public function snapshot_append()
-        {
-
-        }
     };
 
 ?>

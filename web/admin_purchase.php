@@ -7,6 +7,8 @@
             include_once "admin_header.php";
             include_once "fpdb.php";
 
+            include_once "snapshot_hack.php";
+
             try {
                 $db = new FPDB();
             } catch (FPDBException $e) {
@@ -16,6 +18,7 @@
 
         <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
             <select name = "user_id">
+
                 <?php
                     /* User dropdown */
                     try {
@@ -29,8 +32,10 @@
                             $user["user_id"], $user["first_name"], $user["last_name"]);
                     }
                 ?>
+
             </select>
             <select name = "beer_id">
+                
                 <?php
                     /* Beer dropdown */
                     try {
@@ -42,18 +47,15 @@
                     foreach ($db as $inventory_item) {
                         $beer_id = $inventory_item["beer_id"];
 
-                        try {
-                            $beer = $db->snapshot_get($beer_id);
-                        } catch (FPDBException $e) {
-                            die($e->getMessage());
-                        }
-
-                        printf("<option value = %d> %s </option>", $beer_id, $beer);
+                        printf("<option value = %d> %s </option>", 
+                            $beer_id, beer_name($beer_id));
                     }
                 ?>
+
             </select>
             <input type="submit" name="submit" value="Register"/>
         </form>
+
 
         <?php
             if (isset($_POST["submit"])) {

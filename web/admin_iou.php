@@ -26,15 +26,8 @@
                     die($e->getMessage());
                 }
 
-                /* For each beer in inventory, insert row a in the table */
-                foreach ($db as $inventory_item) {
-                    extract($inventory_item);
-
-                    try {
-                        $beer = $db->snapshot_get($beer_id);
-                    } catch (FPDBException $e) {
-                        die($e->getMessage());
-                    }
+                foreach ($db as $user_iou) {
+                    extract($user_iou);
 
                     printf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>", 
                         $username, $first_name, $last_name, $amount);

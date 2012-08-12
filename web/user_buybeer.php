@@ -7,36 +7,31 @@
             include_once "user_header.php";
             include_once "fpdb.php";
 
+            include_once "snapshot_hack.php";
+
             try {
                 $db = new FPDB();
             } catch (FPDBException $e) {
                 die($e->getMessage());
             }
 
-
             /* Print radio buttons, one for each beer on inventory. */
-            printf("<form action=\"%s\" method=\"post\">", $_SERVER["PHP_SELF"]);
-
             try {
                 $db->inventory_get();
             } catch (FPDBException $e) {
                 die($e->getMessage());
             }
 
+            printf("<form action=\"%s\" method=\"post\">", $_SERVER["PHP_SELF"]);
             foreach ($db as $inventory_item) {
                 $beer_id = $inventory_item["beer_id"];
 
-                try {
-                    $beer = $db->snapshot_get($beer_id);
-                } catch (FPDBException $e) {
-                    die($e->getMessage());
-                }
-
-                printf("<input type=\"radio\" name=\"beer_id\" value=%d> %s </br>",  $beer_id, $beer);
+                printf("<input type=\"radio\" name=\"beer_id\" value=%d> %s </br>", 
+                    $beer_id, beer_name($beer_id));
             }
-
             printf("<input type=\"submit\" name=\"submit\" value=\"Register\"/>");
             printf("</form>");
+
 
             /* Record beer purchase in the database. */
             if (isset($_POST["submit"])) {
