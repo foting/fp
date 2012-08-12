@@ -72,10 +72,14 @@
         }
 
 
-        public function user_get($username)
+        public function user_get($username = "")
         {
-            /* Assuming that username is unique */
-            $query = sprintf("SELECT * FROM users WHERE username = '%s'", $username);
+            if ($username) {    
+                /* Assuming that username is unique */
+                $query = sprintf("SELECT * FROM users WHERE username = '%s'", $username);
+            } else {
+                $query = sprintf("SELECT * FROM users");
+            }
             $this->query($query);
             return $this->result();
         }
@@ -106,15 +110,11 @@
         }
 
 
-        public function payment_append($username, $admin_name, $amount)
+        public function payment_append($user_id, $admin_id, $amount)
         {
-            $q1 = sprintf("SELECT user_id FROM users WHERE username = '%s'", $username);
-            $this->query($q1);
-            $user = $this->result();
-
-            $q2 = sprintf("INSERT INTO payments (user_id, admin_id, amount)
-                  VALUES ('%d', '%d', '%d')", $user["user_id"], $admin_name, $amount);
-            $this->query($q2);
+            $query = sprintf("INSERT INTO payments (user_id, admin_id, amount)
+                     VALUES ('%d', '%d', '%d')", $user_id, $admin_id, $amount);
+            $this->query($query);
         }
 
 

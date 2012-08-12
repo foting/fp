@@ -4,13 +4,33 @@
     </head>
     <body>
         <?php
-            include_once "admin_header.php"
+            include_once "admin_header.php";
+            include_once "fpdb.php";
+
+            try {
+                $db = new FPDB();
+            } catch (FPDBException $e) {
+                die($e->getMessage());
+            }
         ?>
 
         <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
-            <p>username: <input type="text" required="required" name="username" /></p>
-            <p>amount:    <input type="text" required="required" name="amount"    /></p>
-            <p>           <input type="submit"/></p>
+            <select name = "user_id">
+                <?php
+                    try {
+                        $db->user_get();
+                    } catch (FPDBException $e) {
+                        die($e->getMessage());
+                    }
+
+                    foreach ($db as $user) {
+                        printf("<option value = %d> %s %s </option>",
+                            $user["user_id"], $user["first_name"], $user["last_name"]);
+                    }
+                ?>
+            </select>
+            amount: <input type="text" required="required" name="amount"/>
+                    <input type="submit" name="submit" value="Register"/>
         </form>
 
         <?php
@@ -26,10 +46,7 @@
                 extract($_POST);
 
                 try {
-                    include_once "fpdb.php";
-
-                    $db = new FPDB();
-                    $db->payment_append($username, $admin_id, $amount);
+                    $db->payment_append($user_id, $admin_id, $amount);
                 } catch (FPDBException $e) {
                     die($e->getMessage());
                 }
