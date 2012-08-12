@@ -109,6 +109,12 @@
             $this->query($query);
         }
 
+        public function payment_get($user_id)
+        {
+            $query = sprintf("SELECT * FROM payments WHERE user_id = '%s'", $user_id);
+            $this->query($query);
+            return $this->result();
+        }
 
         public function payment_append($user_id, $admin_id, $amount)
         {
