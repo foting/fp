@@ -5,10 +5,31 @@
     <body>
         <p>It's Friday! Are you ready to get drunk?</p>
 
-        <form action="login.php" method="post">
-            <p>User name: <input type="text" required="required" name="user_name" /></p>
-            <p>Password:  <input type="text" required="required" name="password"  /></p>
-            <p>           <input type="submit"/></p>
-        </form>
+        <table width="300" border="0" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">
+            <tr>
+            <form name="form1" method="post" action="login.php">
+            <td>
+            <table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#FFFFFF">
+            <tr>
+                <td width="78">Username</td>
+                <td width="6">:</td>
+                <td width="294"><input type="text" required="required" name="user_name"></td>
+            </tr>
+            <tr>
+                <td>Password</td>
+                <td>:</td>
+                <td><input <input type="text" required="required" name="password" ></td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td><input type="submit" name="submit" value="Login"></td>
+            </tr>
+            </table>
+            </td>
+            </form>
+           </tr>
+        </table>
+
     <body>
 </html> 
