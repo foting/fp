@@ -269,7 +269,19 @@
                 $this->query("SELECT * FROM iou_tmp;");
             }
             return $this->result();
-        }
+	}
+
+	public function sbl_beer_table_nuke($sbl_xml) {
+	    $sbl_beers = simplexml_load_file($sbl_xml);
+	     
+	    foreach ($sbl_beers->artikel as $beer) {
+		$this->query("INSERT INTO sbl_beer VALUES ($beer->nr, $beer->Artikelid, $beer->Varnummer,
+		\"$beer->Namn\", \"$beer->Namn2\", $beer->Prisinklmoms, $beer->Volymiml, $beer->PrisPerLiter, \"$beer->Saljstart\",
+		\"$beer->Slutlev\", \"$beer->Varugrupp\", \"$beer->Forpackning\", \"$beer->Forslutning\", \"$beer->Ursprung\",
+		\"$beer->Ursprunglandnamn\", \"$beer->Producent\", \"$beer->Leverantor\", \"$beer->Argang\", \"$beer->Provadargang\",
+		\"$beer->Alkoholhalt\", \"$beer->Modul\", \"$beer->Sortiment\", $beer->Ekologisk, $beer->Koscher)");
+	    }
+	}	    
     };
 
 ?>
