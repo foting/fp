@@ -15,33 +15,29 @@
 
         function __construct($credentails = CRED_USER)
         {
-            $ok = True;
-
             switch ($credentails) {
                 case CRED_USER:
                     $dbn = array(
-                        "server" => "steam.it.uu.se",
-                        "username" => "admin",
-                        "password" => "fp_at_polacks",
-                        "database" => "fp_test",
+                        "server" => "localhost",
+                        "username" => "fdp",
+                        "password" => "Finish3dKruk4Fronti3r",
+                        "database" => "fdp",
                     );
                     break;
                 case CRED_ADMIN:
                     $dbn = array(
-                        "server" => "steam.it.uu.se",
-                        "username" => "admin",
-                        "password" => "fp_at_polacks",
-                        "database" => "fp_test",
+                        "server" => "localhost",
+                        "username" => "fdp",
+                        "password" => "Finish3dKruk4Fronti3r",
+                        "database" => "fdp",
                     );
                     break;
             }
 
-            $ok = $ok && ($this->link = mysqli_connect(
-                $dbn["server"], $dbn["username"], $dbn["password"]));
+            $this->link = mysqli_connect(
+                $dbn["server"], $dbn["username"], $dbn["password"], $dbn["database"]);
 
-            $ok = $ok && mysqli_select_db($dbn["database"]);
-
-            if (!$ok) {
+            if (!$this->link) {
                 throw new FPDBException(mysqli_error());
             }
         }
@@ -54,7 +50,7 @@
 
         public function query($query)
         {
-            $this->query_ = mysqli_real_escape_string(mysqli_query($query));
+            $this->query_ = mysqli_query($this->link, $query);
             if (!$this->query_) {
                 throw new FPDBException(mysqli_error());
             }
@@ -152,7 +148,7 @@
 $beers_bought_q = <<<EOT
     CREATE TEMPORARY TABLE beers_bought_tmp AS (
         SELECT   beer_id, SUM(amount) AS count
-        FROM     beers_bougth
+        FROM     beers_bought
         GROUP BY beer_id
     )
 EOT;
@@ -184,7 +180,7 @@ EOT;
 
         public function inventory_append($user_id, $beer_id, $amount, $price)
         {
-            $query = sprintf("INSERT INTO beers_bougth (admin_id, beer_id, amount, price)
+            $query = sprintf("INSERT INTO beers_bought (admin_id, beer_id, amount, price)
                     VALUES ('%d', '%d', '%d', '%.2f')", $user_id, $beer_id, $amount, $price);
             $this->query($query);
         }
@@ -197,10 +193,10 @@ $time_charged_q = <<<EOT
                 bs.beer_id,
                 bs.timestamp AS time_sold,
                 (SELECT MAX(bb.timestamp)
-                    FROM   beers_bougth bb
+                    FROM   beers_bought bb
                     WHERE  bb.beer_id = bs.beer_id and
                     bb.timestamp <= bs.timestamp
-                ) as time_bougth
+                ) as time_bought
         FROM beers_sold bs
         ORDER BY bs.user_id
     )
@@ -215,15 +211,15 @@ $beers_sold_at_price_q = <<<EOT
                 u.last_name,
                 bb.price
         FROM    time_charged_tmp tc,
-                beers_bougth bb, users u
+                beers_bought bb, users u
         WHERE   tc.beer_id = bb.beer_id and
-                tc.time_bougth = bb.timestamp and
+                tc.time_bought = bb.timestamp and
         u.user_id = tc.user_id
     )
 EOT;
 
-$beers_bougth_total_q = <<<EOT
-    CREATE TEMPORARY TABLE beers_bougth_total_tmp AS (
+$beers_bought_total_q = <<<EOT
+    CREATE TEMPORARY TABLE beers_bought_total_tmp AS (
         SELECT  user_id,
                 username,
                 first_name,
@@ -251,7 +247,7 @@ $iou_tmp_q = <<<EOT
                 bb.first_name,
                 bb.last_name,
                 COALESCE(bb.amount, 0) - COALESCE(pa.total, 0) AS amount
-        FROM      beers_bougth_total_tmp bb
+        FROM      beers_bought_total_tmp bb
         LEFT JOIN payments_total_tmp pa
         ON        bb.user_id = pa.user_id
     )
@@ -260,7 +256,7 @@ EOT;
             
             $this->query($time_charged_q);
             $this->query($beers_sold_at_price_q);
-            $this->query($beers_bougth_total_q);
+            $this->query($beers_bought_total_q);
             $this->query($payments_total_q);
             $this->query($iou_tmp_q);
 
