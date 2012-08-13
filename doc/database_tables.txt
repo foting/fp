@@ -18,7 +18,7 @@ CREATE TABLE beers_sold (
     timestamp   TIMESTAMP DEFAULT NOW()
 );
 
-CREATE TABLE beers_bougth (
+CREATE TABLE beers_bought (
     admin_id    INT,                    /* Admin who bought the beers */
     beer_id     INT,                    /* Id of bought beer */
     amount      INT,                    /* How many were bought */
