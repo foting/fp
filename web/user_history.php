@@ -26,8 +26,8 @@
 
             printf("Purchases:</br>");
             foreach ($db as $purchase) {
-                printf("%s: %s</br>",
-                    $purchase["timestamp"], beer_name($purchase["beer_id"]));
+                printf("%s: %s %d</br>",
+                    $purchase["time_bought"], beer_name($purchase["beer_id"]), $purchase["price"]);
             }
             printf("<hr>");
             
