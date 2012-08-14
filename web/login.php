@@ -20,6 +20,7 @@
         die("Did you forget your password? Sorry your fucked.");
     }
 
+    $_SESSION["loggedin"] = True;
     $_SESSION["username"] = $username;
     $_SESSION["user_id"] = $qres["user_id"];
     $_SESSION["first_name"] = $qres["first_name"];

@@ -1,7 +1,13 @@
 <?php
     include_once "include/credentials.php";
     
-    session_start() or die("Couldn't start session");
+    if (!session_start()) {
+        die("Couldn't start session");
+    }
+
+    if (!isset($_SESSION["loggedin"])) {
+        head("index.html");
+    }
 
     $credentials = $_SESSION["credentials"];
     if ($credentials != CRED_ADMIN) {
