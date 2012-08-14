@@ -1,6 +1,6 @@
 <html>
     <head>
-        <title>FridayPub Admin's Area</title>
+        <title>FridayPub User's Area</title>
     </head>
     <body>
         <?php
