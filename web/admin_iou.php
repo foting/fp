@@ -8,7 +8,7 @@
             include_once "fpdb.php";
 
             try {
-                $db = new FPDB($_SESSION["credentials"]);
+                $db = new FPDB_Admin();
             } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
@@ -25,7 +25,7 @@
 
             <?php
                 try {
-                    $qres = $db->iou_get();
+                    $qres = $db->iou_get_all();
                 } catch (FPDB_Exception $e) {
                     die($e->getMessage());
                 }

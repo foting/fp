@@ -8,7 +8,7 @@
             include_once "fpdb.php";
 
             try {
-                $db = new FPDB($_SESSION["credentials"]);
+                $db = new FPDB_Admin($_SESSION["credentials"]);
             } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }

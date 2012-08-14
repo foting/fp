@@ -10,7 +10,7 @@
             include_once "snapshot_hack.php";
 
             try {
-                $db = new FPDB();
+                $db = new FPDB_Admin();
             } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
@@ -22,7 +22,7 @@
                 <?php
                     /* User dropdown */
                     try {
-                        $qres = $db->user_get();
+                        $qres = $db->user_get_all();
                     } catch (FPDB_Exception $e) {
                         die($e->getMessage());
                     }
@@ -39,7 +39,7 @@
                 <?php
                     /* Beer dropdown */
                     try {
-                        $qres = $db->inventory_get();
+                        $qres = $db->inventory_get_all();
                     } catch (FPDB_Exception $e) {
                         die($e->getMessage());
                     }

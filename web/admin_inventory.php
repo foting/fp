@@ -9,7 +9,7 @@
             include_once "snapshot_hack.php";
 
             try {
-                $db = new FPDB($_SESSION["credentials"]);
+                $db = new FPDB_Admin();
             } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
@@ -23,7 +23,7 @@
 
             <?php
                 try {
-                    $qres = $db->inventory_get();
+                    $qres = $db->inventory_get_all();
                 } catch (FPDB_Exception $e) {
                     die($e->getMessage());
                 }

@@ -107,21 +107,8 @@
         private $result_ = False;
         private $position = 0;
 
-        function __construct($credentials = CRED_USER)
+        function __construct($dbn)
         {
-            switch ($credentials) {
-                case CRED_USER:
-                    include "include/user_db_credentials.php";
-                    break;
-                case CRED_ADMIN:
-                    include "include/admin_db_credentials.php";
-                    break;
-            }
-
-            if (!isset($dbn)) {
-                throw new FPDB_Exception("Data base credentials not found.");
-            }
-
             $this->link = sql_connect(
                 $dbn["server"], $dbn["username"], $dbn["password"], $dbn["database"]);
 
@@ -147,23 +134,23 @@
     };
 
 
-    class FPDB extends FPDB_Base
+    class FPDB_User extends FPDB_Base
     {
-	    private $beers_bought_q = "
+	    protected $beers_bought_q = "
             CREATE TEMPORARY TABLE beers_bought_tmp AS (
                 SELECT   beer_id, SUM(amount) AS count
                 FROM     beers_bought
                 GROUP BY beer_id
 	        )";
 
-	    private $beers_sold_q = "
+	    protected $beers_sold_q = "
             CREATE TEMPORARY TABLE beers_sold_tmp AS (
                 SELECT   beer_id, COUNT(beer_id) AS count
                 FROM     beers_sold
                 GROUP BY beer_id
 	        )";
 
-	    private $inventory_q = "
+	    protected $inventory_q = "
 	        CREATE TEMPORARY TABLE inventory_tmp AS (
 		        SELECT    beers_bought_tmp.beer_id,
 			              COALESCE(beers_bought_tmp.count, 0) - COALESCE(beers_sold_tmp.count, 0) AS count
@@ -172,7 +159,7 @@
 	    )";
 
 
-        private $time_charged_q = "
+        protected $time_charged_q = "
             CREATE TEMPORARY TABLE time_charged_tmp AS (
                 SELECT  bs.user_id,
                         bs.beer_id,
@@ -186,7 +173,7 @@
                 ORDER BY bs.user_id
             )";
 
-    	private $beers_sold_at_price_q = "
+    	protected $beers_sold_at_price_q = "
 	        CREATE TEMPORARY TABLE beers_sold_at_price_tmp AS (
 		        SELECT  tc.user_id,
 			            tc.beer_id,
@@ -204,7 +191,7 @@
 		        u.user_id = tc.user_id
          )";
 
-	    private $beers_bought_total_q = "
+	    protected $beers_bought_total_q = "
 	        CREATE TEMPORARY TABLE beers_bought_total_tmp AS (
 		        SELECT  user_id,
 			            username,
@@ -216,7 +203,7 @@
 		        ORDER BY amount DESC
 	        )";
 
-	    private $payments_total_q = "
+	    protected $payments_total_q = "
 	        CREATE TEMPORARY TABLE payments_total_tmp AS (
 		        SELECT  user_id,
 			            SUM(amount) as total
@@ -224,7 +211,7 @@
 		        GROUP BY user_id
 	        )";
 
-	    private $iou_tmp_q = "
+	    protected $iou_tmp_q = "
 	        CREATE TEMPORARY TABLE iou_tmp AS (
 		        SELECT  bb.user_id,
 			            bb.username,
@@ -237,16 +224,106 @@
 	        )";
 
 
-        public function user_get($username = "")
+        function __construct()
         {
-            if ($username) {    
-                /* Assuming that username is unique */
-                $query = sprintf("SELECT * FROM users WHERE username = '%s'", $username);
-            } else {
-                $query = sprintf("SELECT * FROM users");
+            include "include/user_db_credentials.php";
+            if (!isset($dbn)) {
+                throw new FPDB_Exception("Data base credentials not found.");
             }
+            parent::__construct($dbn);
+        }
 
-            return $this->query($query);
+
+        public function user_get($username)
+        {
+            /* Assuming that username is unique */
+            $q = sprintf("SELECT * FROM users WHERE username = '%s'", $username);
+            return $this->query($q);
+        }
+
+        public function user_get_all()
+        {
+            return $this->query("SELECT * FROM users");
+        }
+
+
+        public function purchase_get($user_id)
+        {
+            $this->query($this->time_charged_q);
+            $this->query($this->beers_sold_at_price_q);
+            $q = sprintf("SELECT * FROM beers_sold_at_price_tmp WHERE user_id = '%s'", $user_id);
+            return $this->query($q);
+        }
+
+        public function purchase_get_all()
+        {
+            $this->query($this->time_charged_q);
+            $this->query($this->beers_sold_at_price_q);
+            return $this->query("SELECT * FROM beers_sold_at_price_tmp");
+        }
+
+        /* Only *_append method exposed to users */
+        public function purchase_append($user_id, $beer_id)
+        {
+            $query = sprintf("INSERT INTO beers_sold (user_id, beer_id)
+                     VALUES ('%d', '%d')", $user_id, $beer_id);
+            $this->query($query);
+        }
+
+
+        public function payment_get($user_id)
+        {
+            $q = sprintf("SELECT * FROM payments WHERE user_id = '%s'", $user_id);
+            return $this->query($q);
+        }
+
+        public function payment_get_all()
+        {
+            return $this->query("SELECT * FROM payments");
+        }
+
+
+        public function inventory_get_all()
+        {
+            $this->query($this->beers_bought_q);     
+            $this->query($this->beers_sold_q);           
+            $this->query($this->inventory_q);
+            return $this->query("SELECT * FROM inventory_tmp;");
+        }
+
+
+        public function iou_get($user_id)
+        {
+            $this->query($this->time_charged_q);
+            $this->query($this->beers_sold_at_price_q);
+            $this->query($this->beers_bought_total_q);
+            $this->query($this->payments_total_q);
+            $this->query($this->iou_tmp_q);
+
+            $q = sprintf("SELECT * FROM iou_tmp WHERE user_id = %d", $user_id);
+            return $this->query($q);
+	    }
+
+        public function iou_get_all()
+        {
+            $this->query($this->time_charged_q);
+            $this->query($this->beers_sold_at_price_q);
+            $this->query($this->beers_bought_total_q);
+            $this->query($this->payments_total_q);
+            $this->query($this->iou_tmp_q);
+            return $this->query("SELECT * FROM iou_tmp");
+	    }
+    };
+
+    class FPDB_Admin extends FPDB_User
+    {
+        function __construct()
+        {
+            include "include/admin_db_credentials.php";
+            if (!isset($dbn)) {
+                throw new FPDB_Exception("Data base credentials not found.");
+            }
+            parent::__construct($dbn);
         }
 
         public function user_append($username, $password, $first_name, $last_name, $email, $phone)
@@ -258,54 +335,11 @@
             $this->query($query);
         }
 
-
-        public function purchase_get($user_id = 0)
-        {
-            $this->query($this->time_charged_q);
-            $this->query($this->beers_sold_at_price_q);
-
-	        if ($user_id) {
-                $query = sprintf("SELECT * FROM beers_sold_at_price_tmp WHERE user_id = '%s'", $user_id);
-            } else {
-                $query = sprintf("SELECT * FROM beers_sold_at_price_tmp");
-            }
-
-            return $this->query($query);
-        }
-
-        public function purchase_append($user_id, $beer_id)
-        {
-            $query = sprintf("INSERT INTO beers_sold (user_id, beer_id)
-                     VALUES ('%d', '%d')", $user_id, $beer_id);
-            $this->query($query);
-        }
-
-        public function payment_get($user_id = 0)
-        {
-	        if ($user_id) {
-                $query = sprintf("SELECT * FROM payments WHERE user_id = '%s'", $user_id);
-	        } else {
-                $query = sprintf("SELECT * FROM payments");
-	        }
-
-            return $this->query($query);
-        }
-
         public function payment_append($user_id, $admin_id, $amount)
         {
             $query = sprintf("INSERT INTO payments (user_id, admin_id, amount)
                      VALUES ('%d', '%d', '%d')", $user_id, $admin_id, $amount);
             $this->query($query);
-        }
-
-
-        public function inventory_get()
-        {
-            $this->query($this->beers_bought_q);     
-            $this->query($this->beers_sold_q);           
-            $this->query($this->inventory_q);
-
-            return $this->query("SELECT * FROM inventory_tmp;");
         }
 
         public function inventory_append($user_id, $beer_id, $amount, $price)
@@ -315,22 +349,6 @@
             $this->query($query);
         }
 
-        public function iou_get($user_id = 0)
-        {
-            $this->query($this->time_charged_q);
-            $this->query($this->beers_sold_at_price_q);
-            $this->query($this->beers_bought_total_q);
-            $this->query($this->payments_total_q);
-            $this->query($this->iou_tmp_q);
-
-            if ($user_id) {
-                $query = sprintf("SELECT * FROM iou_tmp WHERE user_id = %d", $user_id);
-            } else {
-                $query = sprintf("SELECT * FROM iou_tmp;");
-            }
-
-            return $this->query($query);
-	}
 
     /*
 	public function sbl_beer_table_nuke($sbl_xml) {
@@ -346,5 +364,4 @@
 	}	  
     */
     };
-
 ?>

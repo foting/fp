@@ -10,14 +10,14 @@
             include_once "snapshot_hack.php";
 
             try {
-                $db = new FPDB($_SESSION["credentials"]);
+                $db = new FPDB_User();
             } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
 
             /* Print radio buttons, one for each beer on inventory. */
             try {
-                $qres = $db->inventory_get();
+                $qres = $db->inventory_get_all();
             } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }

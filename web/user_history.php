@@ -9,13 +9,13 @@
 
             include_once "snapshot_hack.php";
 
-            $user_id = $_SESSION["user_id"];
-            
             try {
-                $db = new FPDB($_SESSION["credentials"]);
+                $db = new FPDB_User();
             } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
+
+            $user_id = $_SESSION["user_id"];
 
             /* List purchases */
             try {

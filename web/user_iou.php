@@ -9,7 +9,7 @@
 
             $user_id = $_SESSION["user_id"];
             try {
-                $db = new FPDB($_SESSION["credentials"]);
+                $db = new FPDB_User();
                 $iou = $db->iou_get($user_id)->next();
             } catch (FPDB_Exception $e) {
                 die($e->getMessage());

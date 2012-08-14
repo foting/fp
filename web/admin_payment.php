@@ -8,7 +8,7 @@
             include_once "fpdb.php";
 
             try {
-                $db = new FPDB($_SESSION["credentials"]);
+                $db = new FPDB_Admin();
             } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
@@ -18,7 +18,7 @@
             <select name = "user_id">
                 <?php
                     try {
-                        $qres = $db->user_get();
+                        $qres = $db->user_get_all();
                     } catch (FPDB_Exception $e) {
                         die($e->getMessage());
                     }
