@@ -1,6 +1,57 @@
 <?php
 
-    include_once "init/credentials.inc.php";
+    include_once "include/credentials.php";
+
+    /* Not all server at uni supports mysqli hence these wrappers */
+    function sql_connect($server, $username, $password, $database)
+    {
+        if (function_exists(mysqli_connect)) {
+            return  mysqli_connect($server, $username, $password, $database);
+        } else {
+            $link = mysql_connect($server, $username, $password);
+            if (!$link || !mysql_select_db($database)) {
+                return False;
+            }
+            return $link;
+        }
+    }
+
+    function sql_close($link)
+    {
+        if (function_exists(mysqli_error)) {
+            return mysqli_close($link);
+        } else {
+            return mysql_close();
+        }
+    }
+
+    function sql_error($link)
+    {
+        if (function_exists(mysqli_error)) {
+            return mysqli_error($link);
+        } else {
+            return mysql_error();
+        }
+    }
+
+    function sql_query($link, $query)
+    {
+        if (function_exists(mysqli_query)) {
+            return mysqli_query($link, $query);
+        } else {
+            return mysql_query($query);
+        }
+    }
+
+    function sql_fetch_assoc($results)
+    {
+        if (function_exists(mysqli_fetch_assoc)) {
+            return mysqli_fetch_assoc($results);
+        } else {
+            return mysql_fetch_assoc($results);
+        }
+    }
+
 
     class FPDBException extends Exception {
 
@@ -13,130 +64,134 @@
         private $result_ = False;
         private $position = 0;
 
-	private $beers_bought_q = "
-	    CREATE TEMPORARY TABLE beers_bought_tmp AS (
-		SELECT   beer_id, SUM(amount) AS count
-		FROM     beers_bought
-		GROUP BY beer_id
+	    private $beers_bought_q = "
+            CREATE TEMPORARY TABLE beers_bought_tmp AS (
+                SELECT   beer_id, SUM(amount) AS count
+                FROM     beers_bought
+                GROUP BY beer_id
+	        )";
+
+	    private $beers_sold_q = "
+            CREATE TEMPORARY TABLE beers_sold_tmp AS (
+                SELECT   beer_id, COUNT(beer_id) AS count
+                FROM     beers_sold
+                GROUP BY beer_id
+	        )";
+
+	    private $inventory_q = "
+	        CREATE TEMPORARY TABLE inventory_tmp AS (
+		        SELECT    beers_bought_tmp.beer_id,
+			              COALESCE(beers_bought_tmp.count, 0) - COALESCE(beers_sold_tmp.count, 0) AS count
+		        FROM      beers_bought_tmp
+		        LEFT JOIN beers_sold_tmp ON beers_bought_tmp.beer_id = beers_sold_tmp.beer_id
 	    )";
 
-	private $beers_sold_q = "
-	    CREATE TEMPORARY TABLE beers_sold_tmp AS (
-		SELECT   beer_id, COUNT(beer_id) AS count
-		FROM     beers_sold
-		GROUP BY beer_id
-	    )";
 
-	private $inventory_q = "
-	    CREATE TEMPORARY TABLE inventory_tmp AS (
-		SELECT    beers_bought_tmp.beer_id,
-			  COALESCE(beers_bought_tmp.count, 0) - COALESCE(beers_sold_tmp.count, 0) AS count
-		FROM      beers_bought_tmp
-		LEFT JOIN beers_sold_tmp ON beers_bought_tmp.beer_id = beers_sold_tmp.beer_id
-	    )";
-
-
-	private $time_charged_q = "
-	    CREATE TEMPORARY TABLE time_charged_tmp AS (
-		SELECT  bs.user_id,
-			bs.beer_id,
-			bs.timestamp AS time_sold,
-			(SELECT MAX(bb.timestamp)
-			    FROM   beers_bought bb
-			    WHERE  bb.beer_id = bs.beer_id and
-			    bb.timestamp <= bs.timestamp
-			) as time_bought
-		FROM beers_sold bs
-		ORDER BY bs.user_id)";
+        private $time_charged_q = "
+            CREATE TEMPORARY TABLE time_charged_tmp AS (
+                SELECT  bs.user_id,
+                        bs.beer_id,
+                        bs.timestamp AS time_sold,
+                        (SELECT MAX(bb.timestamp)
+                         FROM   beers_bought bb
+                         WHERE  bb.beer_id = bs.beer_id and
+                                bb.timestamp <= bs.timestamp
+                        ) as time_bought
+                FROM beers_sold bs
+                ORDER BY bs.user_id
+            )";
 
     	private $beers_sold_at_price_q = "
-	    CREATE TEMPORARY TABLE beers_sold_at_price_tmp AS (
-		SELECT  tc.user_id,
-			tc.beer_id,
-			u.username,
-			u.first_name,
-			u.last_name,
-			bb.price,
-			tc.time_sold,
-			tc.time_bought
-		FROM    time_charged_tmp tc,
-			beers_bought bb, users u
-		WHERE   tc.beer_id = bb.beer_id and
-			tc.time_bought = bb.timestamp and
-		u.user_id = tc.user_id)";
+	        CREATE TEMPORARY TABLE beers_sold_at_price_tmp AS (
+		        SELECT  tc.user_id,
+			            tc.beer_id,
+			            u.username,
+			            u.first_name,
+			            u.last_name,
+			            bb.price,
+			            tc.time_sold,
+			            tc.time_bought
+		        FROM    time_charged_tmp tc,
+			            beers_bought bb,
+                        users u
+		        WHERE   tc.beer_id = bb.beer_id and
+			    tc.time_bought = bb.timestamp and
+		        u.user_id = tc.user_id
+         )";
 
-	private $beers_bought_total_q = "
-	    CREATE TEMPORARY TABLE beers_bought_total_tmp AS (
-		SELECT  user_id,
-			username,
-			first_name,
-			last_name,
-			SUM(price) AS amount
-		FROM beers_sold_at_price_tmp
-		GROUP BY user_id
-		ORDER BY amount DESC
-	    )";
+	    private $beers_bought_total_q = "
+	        CREATE TEMPORARY TABLE beers_bought_total_tmp AS (
+		        SELECT  user_id,
+			            username,
+			            first_name,
+			            last_name,
+			            SUM(price) AS amount
+		        FROM beers_sold_at_price_tmp
+		        GROUP BY user_id
+		        ORDER BY amount DESC
+	        )";
 
-	private $payments_total_q = "
-	    CREATE TEMPORARY TABLE payments_total_tmp AS (
-		SELECT  user_id,
-			SUM(amount) as total
-		FROM payments
-		GROUP BY user_id
-	    )";
+	    private $payments_total_q = "
+	        CREATE TEMPORARY TABLE payments_total_tmp AS (
+		        SELECT  user_id,
+			            SUM(amount) as total
+		        FROM payments
+		        GROUP BY user_id
+	        )";
 
-	private $iou_tmp_q = "
-	    CREATE TEMPORARY TABLE iou_tmp AS (
-		SELECT  bb.user_id,
-			bb.username,
-			bb.first_name,
-			bb.last_name,
-			COALESCE(bb.amount, 0) - COALESCE(pa.total, 0) AS amount
-		FROM      beers_bought_total_tmp bb
-		LEFT JOIN payments_total_tmp pa
-		ON        bb.user_id = pa.user_id
-	    )";
+	    private $iou_tmp_q = "
+	        CREATE TEMPORARY TABLE iou_tmp AS (
+		        SELECT  bb.user_id,
+			            bb.username,
+			            bb.first_name,
+			            bb.last_name,
+			            COALESCE(bb.amount, 0) - COALESCE(pa.total, 0) AS amount
+		        FROM      beers_bought_total_tmp bb
+		        LEFT JOIN payments_total_tmp pa
+		        ON        bb.user_id = pa.user_id
+	        )";
+
 
         function __construct($credentials = CRED_USER)
         {
             switch ($credentials) {
                 case CRED_USER:
-                    include ("/init/user_db_credentials.inc.php");
+                    include "include/user_db_credentials.php";
                     break;
                 case CRED_ADMIN:
-                    include ("/init/admin_db_credentials.inc.php");
+                    include "include/admin_db_credentials.php";
                     break;
             }
-            if (isset($dbn)) {
-                $this->link = mysqli_connect(
-                    $dbn["server"], $dbn["username"], $dbn["password"], $dbn["database"]);
-    
-                if (!$this->link) {
-                    throw new FPDBException(mysqli_error($this->link));
-                }
+
+            if (!isset($dbn)) {
+                throw new FPDBException("Data base credentials not found.");
             }
-            else {
-                echo "You have forgotten to get credentials!";
+
+            $this->link = sql_connect(
+                $dbn["server"], $dbn["username"], $dbn["password"], $dbn["database"]);
+
+            if (!$this->link) {
+                throw new FPDBException(sql_error($this->link));
             }
         }
 
         function __destruct()
         {
-            mysqli_close($this->link);
+            sql_close($this->link);
         }
 
 
         public function query($query)
         {
-            $this->query_ = mysqli_query($this->link, $query);
+            $this->query_ = sql_query($this->link, $query);
             if (!$this->query_) {
-                throw new FPDBException(mysqli_error($this->link));
+                throw new FPDBException(sql_error($this->link) . ": " . $query);
             }
         }
 
         public function result()
         {
-            $this->result_ = mysqli_fetch_assoc($this->query_);
+            $this->result_ = sql_fetch_assoc($this->query_);
             return $this->result_;
         }
 
@@ -183,7 +238,6 @@
 
         public function user_append($username, $password, $first_name, $last_name, $email, $phone)
         {
-            include_once "credentials.php";
             $query = sprintf("INSERT INTO users
                      (credentials, password, username, first_name, last_name, email, phone)
                      VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s')",
@@ -197,7 +251,7 @@
             $this->query($this->time_charged_q);
             $this->query($this->beers_sold_at_price_q);
 
-	    if ($user_id) 
+	        if ($user_id) 
                 $query = sprintf("SELECT * FROM beers_sold_at_price_tmp WHERE user_id = '%s'", $user_id);
             else 
                 $query = sprintf("SELECT * FROM beers_sold_at_price_tmp");
@@ -215,11 +269,11 @@
 
         public function payment_get($user_id = 0)
         {
-	    if ($user_id) {
+	        if ($user_id) {
                 $query = sprintf("SELECT * FROM payments WHERE user_id = '%s'", $user_id);
-	    } else {
+	        } else {
                 $query = sprintf("SELECT * FROM payments");
-	    }
+	        }
             $this->query($query);
             return $this->result();
         }
