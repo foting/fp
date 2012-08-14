@@ -22,12 +22,12 @@
                 <?php
                     /* User dropdown */
                     try {
-                        $db->user_get();
+                        $qres = $db->user_get();
                     } catch (FPDBException $e) {
                         die($e->getMessage());
                     }
 
-                    foreach ($db as $user) {
+                    foreach ($qres as $user) {
                         printf("<option value = %d> %s %s </option>",
                             $user["user_id"], $user["first_name"], $user["last_name"]);
                     }
@@ -39,12 +39,12 @@
                 <?php
                     /* Beer dropdown */
                     try {
-                        $db->inventory_get();
+                        $qres = $db->inventory_get();
                     } catch (FPDBException $e) {
                         die($e->getMessage());
                     }
 
-                    foreach ($db as $inventory_item) {
+                    foreach ($qres as $inventory_item) {
                         $beer_id = $inventory_item["beer_id"];
 
                         printf("<option value = %d> %s </option>", 

@@ -57,7 +57,50 @@
 
     }
 
-    class FPDB_Base implements Iterator
+    class FPDB_Results implements Iterator
+    {
+        private $sql_results;
+        private $iterator;
+        private $position;
+
+        function  __construct($sql_results)
+        {
+            $this->sql_results = $sql_results;
+            $this->iterator = True; // In case valid is called before rewind
+            $this->position = 0;
+        }
+
+        /* Iterator interface */
+        public function current()
+        {
+            return $this->iterator;
+        }
+
+        public function next()
+        {
+            $this->iterator = sql_fetch_assoc($this->sql_results);
+            $this->position++;
+            return $this->iterator; // Not requred by Iterator
+        }
+
+        public function rewind()
+        {
+            $this->iterator = sql_fetch_assoc($this->sql_results);
+            $this->position = 0;
+        }
+
+        public function key()
+        {
+            return $this->position;
+        }
+
+        public function valid()
+        {
+            return $this->iterator ? True : False;
+        }
+    };
+
+    class FPDB_Base
     {
         private $link;
         private $query_ = False;
@@ -95,65 +138,32 @@
 
         protected function query($query)
         {
-            $this->query_ = sql_query($this->link, $query);
-            if (!$this->query_) {
+            $results = sql_query($this->link, $query);
+            if (!$results) {
                 throw new FPDBException(sql_error($this->link) . ": " . $query);
             }
-        }
-
-        protected function result()
-        {
-            $this->result_ = sql_fetch_assoc($this->query_);
-            return $this->result_;
-        }
-
-        /* Iterator interface */
-        public function current()
-        {
-            return $this->result_;
-        }
-
-        public function next()
-        {
-            $this->position += 1;
-            return $this->result();
-        }
-
-        public function rewind()
-        {
-            /* We only allow the iterator to be used once per query. */
-            $this->postition = 0;
-        }
-
-        public function key()
-        {
-            return $this->position;
-        }
-
-        public function valid()
-        {
-            return $this->result_ ? True : False;
+            return new FPDB_Results($results);
         }
     };
 
 
     class FPDB extends FPDB_Base
     {
-	    private static $beers_bought_q = "
+	    private $beers_bought_q = "
             CREATE TEMPORARY TABLE beers_bought_tmp AS (
                 SELECT   beer_id, SUM(amount) AS count
                 FROM     beers_bought
                 GROUP BY beer_id
 	        )";
 
-	    private static $beers_sold_q = "
+	    private $beers_sold_q = "
             CREATE TEMPORARY TABLE beers_sold_tmp AS (
                 SELECT   beer_id, COUNT(beer_id) AS count
                 FROM     beers_sold
                 GROUP BY beer_id
 	        )";
 
-	    private static $inventory_q = "
+	    private $inventory_q = "
 	        CREATE TEMPORARY TABLE inventory_tmp AS (
 		        SELECT    beers_bought_tmp.beer_id,
 			              COALESCE(beers_bought_tmp.count, 0) - COALESCE(beers_sold_tmp.count, 0) AS count
@@ -162,7 +172,7 @@
 	    )";
 
 
-        private static $time_charged_q = "
+        private $time_charged_q = "
             CREATE TEMPORARY TABLE time_charged_tmp AS (
                 SELECT  bs.user_id,
                         bs.beer_id,
@@ -176,7 +186,7 @@
                 ORDER BY bs.user_id
             )";
 
-    	private static $beers_sold_at_price_q = "
+    	private $beers_sold_at_price_q = "
 	        CREATE TEMPORARY TABLE beers_sold_at_price_tmp AS (
 		        SELECT  tc.user_id,
 			            tc.beer_id,
@@ -194,7 +204,7 @@
 		        u.user_id = tc.user_id
          )";
 
-	    private static $beers_bought_total_q = "
+	    private $beers_bought_total_q = "
 	        CREATE TEMPORARY TABLE beers_bought_total_tmp AS (
 		        SELECT  user_id,
 			            username,
@@ -206,7 +216,7 @@
 		        ORDER BY amount DESC
 	        )";
 
-	    private static $payments_total_q = "
+	    private $payments_total_q = "
 	        CREATE TEMPORARY TABLE payments_total_tmp AS (
 		        SELECT  user_id,
 			            SUM(amount) as total
@@ -214,7 +224,7 @@
 		        GROUP BY user_id
 	        )";
 
-	    private static $iou_tmp_q = "
+	    private $iou_tmp_q = "
 	        CREATE TEMPORARY TABLE iou_tmp AS (
 		        SELECT  bb.user_id,
 			            bb.username,
@@ -235,8 +245,8 @@
             } else {
                 $query = sprintf("SELECT * FROM users");
             }
-            $this->query($query);
-            return $this->result();
+
+            return $this->query($query);
         }
 
         public function user_append($username, $password, $first_name, $last_name, $email, $phone)
@@ -254,13 +264,13 @@
             $this->query($this->time_charged_q);
             $this->query($this->beers_sold_at_price_q);
 
-	        if ($user_id) 
+	        if ($user_id) {
                 $query = sprintf("SELECT * FROM beers_sold_at_price_tmp WHERE user_id = '%s'", $user_id);
-            else 
+            } else {
                 $query = sprintf("SELECT * FROM beers_sold_at_price_tmp");
+            }
 
-            $this->query($query);
-            return $this->result();
+            return $this->query($query);
         }
 
         public function purchase_append($user_id, $beer_id)
@@ -277,8 +287,8 @@
 	        } else {
                 $query = sprintf("SELECT * FROM payments");
 	        }
-            $this->query($query);
-            return $this->result();
+
+            return $this->query($query);
         }
 
         public function payment_append($user_id, $admin_id, $amount)
@@ -295,8 +305,7 @@
             $this->query($this->beers_sold_q);           
             $this->query($this->inventory_q);
 
-            $this->query("SELECT * FROM inventory_tmp;");
-            return $this->result();
+            return $this->query("SELECT * FROM inventory_tmp;");
         }
 
         public function inventory_append($user_id, $beer_id, $amount, $price)
@@ -315,13 +324,15 @@
             $this->query($this->iou_tmp_q);
 
             if ($user_id) {
-                $this->query("SELECT * FROM iou_tmp WHERE user_id = " . $user_id);
+                $query = sprintf("SELECT * FROM iou_tmp WHERE user_id = %d", $user_id);
             } else {
-                $this->query("SELECT * FROM iou_tmp;");
+                $query = sprintf("SELECT * FROM iou_tmp;");
             }
-            return $this->result();
+
+            return $this->query($query);
 	}
 
+    /*
 	public function sbl_beer_table_nuke($sbl_xml) {
 	    $sbl_beers = simplexml_load_file($sbl_xml);
 	     
@@ -332,7 +343,8 @@
 		\"$beer->Ursprunglandnamn\", \"$beer->Producent\", \"$beer->Leverantor\", \"$beer->Argang\", \"$beer->Provadargang\",
 		\"$beer->Alkoholhalt\", \"$beer->Modul\", \"$beer->Sortiment\", $beer->Ekologisk, $beer->Koscher)");
 	    }
-	}	    
+	}	  
+    */
     };
 
 ?>

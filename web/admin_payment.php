@@ -18,12 +18,12 @@
             <select name = "user_id">
                 <?php
                     try {
-                        $db->user_get();
+                        $qres = $db->user_get();
                     } catch (FPDBException $e) {
                         die($e->getMessage());
                     }
 
-                    foreach ($db as $user) {
+                    foreach ($qres as $user) {
                         printf("<option value = %d> %s %s </option>",
                             $user["user_id"], $user["first_name"], $user["last_name"]);
                     }

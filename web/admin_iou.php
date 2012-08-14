@@ -5,6 +5,13 @@
     <body>
         <?php
             include_once "admin_header.php";
+            include_once "fpdb.php";
+
+            try {
+                $db = new FPDB($_SESSION["credentials"]);
+            } catch (FPDBException $e) {
+                die($e->getMessage());
+            }
         ?>
 
         <table border="1">
@@ -17,16 +24,13 @@
             </tr>
 
             <?php
-                include_once "fpdb.php";
-
                 try {
-                    $db = new FPDB($_SESSION["credentials"]);
-                    $db->iou_get();
+                    $qres = $db->iou_get();
                 } catch (FPDBException $e) {
                     die($e->getMessage());
                 }
 
-                foreach ($db as $user_iou) {
+                foreach ($qres as $user_iou) {
                     extract($user_iou);
 
                     printf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>", 

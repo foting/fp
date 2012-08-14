@@ -19,13 +19,13 @@
 
             /* List purchases */
             try {
-                $db->purchase_get($user_id);
+                $qres = $db->purchase_get($user_id);
             } catch (FPDBException $e) {
                 die($e->getMessage());
             }
 
             printf("Purchases:</br>");
-            foreach ($db as $purchase) {
+            foreach ($qres as $purchase) {
                 printf("%s: %s %d</br>",
                     $purchase["time_bought"], beer_name($purchase["beer_id"]), $purchase["price"]);
             }
@@ -33,13 +33,13 @@
             
             /* List payments */
             try {
-                $db->payment_get($user_id);
+                $qres = $db->payment_get($user_id);
             } catch (FPDBException $e) {
                 die($e->getMessage());
             }
 
             printf("Payments:</br>");
-            foreach ($db as $payment) {
+            foreach ($qres as $payment) {
                 printf("%s: %dkr</br>",
                     $payment["timestamp"], $payment["amount"]);
             }

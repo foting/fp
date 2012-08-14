@@ -6,6 +6,12 @@
         <?php
             include_once "admin_header.php";
             include_once "fpdb.php";
+
+            try {
+                $db = new FPDB($_SESSION["credentials"]);
+            } catch (FPDBException $e) {
+                die($e->getMessage());
+            }
         ?>
 
         <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
@@ -23,7 +29,6 @@
                 extract($_POST);
 
                 try {
-                    $db = new FPDB($_SESSION["credentials"]);
                     $db->user_append($username, $password, $first_name, $last_name, $email, $phone);
                 } catch (FPDBException $e) {
                     die($e->getMessage());

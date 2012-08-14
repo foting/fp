@@ -17,13 +17,13 @@
 
             /* Print radio buttons, one for each beer on inventory. */
             try {
-                $db->inventory_get();
+                $qres = $db->inventory_get();
             } catch (FPDBException $e) {
                 die($e->getMessage());
             }
 
             printf("<form action=\"%s\" method=\"post\">", $_SERVER["PHP_SELF"]);
-            foreach ($db as $inventory_item) {
+            foreach ($qres as $inventory_item) {
                 $beer_id = $inventory_item["beer_id"];
 
                 printf("<input type=\"radio\" name=\"beer_id\" value=%d> %s </br>", 
