@@ -57,100 +57,12 @@
 
     }
 
-    class FPDB implements Iterator
+    class FPDB_Base implements Iterator
     {
         private $link;
         private $query_ = False;
         private $result_ = False;
         private $position = 0;
-
-	    private $beers_bought_q = "
-            CREATE TEMPORARY TABLE beers_bought_tmp AS (
-                SELECT   beer_id, SUM(amount) AS count
-                FROM     beers_bought
-                GROUP BY beer_id
-	        )";
-
-	    private $beers_sold_q = "
-            CREATE TEMPORARY TABLE beers_sold_tmp AS (
-                SELECT   beer_id, COUNT(beer_id) AS count
-                FROM     beers_sold
-                GROUP BY beer_id
-	        )";
-
-	    private $inventory_q = "
-	        CREATE TEMPORARY TABLE inventory_tmp AS (
-		        SELECT    beers_bought_tmp.beer_id,
-			              COALESCE(beers_bought_tmp.count, 0) - COALESCE(beers_sold_tmp.count, 0) AS count
-		        FROM      beers_bought_tmp
-		        LEFT JOIN beers_sold_tmp ON beers_bought_tmp.beer_id = beers_sold_tmp.beer_id
-	    )";
-
-
-        private $time_charged_q = "
-            CREATE TEMPORARY TABLE time_charged_tmp AS (
-                SELECT  bs.user_id,
-                        bs.beer_id,
-                        bs.timestamp AS time_sold,
-                        (SELECT MAX(bb.timestamp)
-                         FROM   beers_bought bb
-                         WHERE  bb.beer_id = bs.beer_id and
-                                bb.timestamp <= bs.timestamp
-                        ) as time_bought
-                FROM beers_sold bs
-                ORDER BY bs.user_id
-            )";
-
-    	private $beers_sold_at_price_q = "
-	        CREATE TEMPORARY TABLE beers_sold_at_price_tmp AS (
-		        SELECT  tc.user_id,
-			            tc.beer_id,
-			            u.username,
-			            u.first_name,
-			            u.last_name,
-			            bb.price,
-			            tc.time_sold,
-			            tc.time_bought
-		        FROM    time_charged_tmp tc,
-			            beers_bought bb,
-                        users u
-		        WHERE   tc.beer_id = bb.beer_id and
-			    tc.time_bought = bb.timestamp and
-		        u.user_id = tc.user_id
-         )";
-
-	    private $beers_bought_total_q = "
-	        CREATE TEMPORARY TABLE beers_bought_total_tmp AS (
-		        SELECT  user_id,
-			            username,
-			            first_name,
-			            last_name,
-			            SUM(price) AS amount
-		        FROM beers_sold_at_price_tmp
-		        GROUP BY user_id
-		        ORDER BY amount DESC
-	        )";
-
-	    private $payments_total_q = "
-	        CREATE TEMPORARY TABLE payments_total_tmp AS (
-		        SELECT  user_id,
-			            SUM(amount) as total
-		        FROM payments
-		        GROUP BY user_id
-	        )";
-
-	    private $iou_tmp_q = "
-	        CREATE TEMPORARY TABLE iou_tmp AS (
-		        SELECT  bb.user_id,
-			            bb.username,
-			            bb.first_name,
-			            bb.last_name,
-			            COALESCE(bb.amount, 0) - COALESCE(pa.total, 0) AS amount
-		        FROM      beers_bought_total_tmp bb
-		        LEFT JOIN payments_total_tmp pa
-		        ON        bb.user_id = pa.user_id
-	        )";
-
 
         function __construct($credentials = CRED_USER)
         {
@@ -181,7 +93,7 @@
         }
 
 
-        public function query($query)
+        protected function query($query)
         {
             $this->query_ = sql_query($this->link, $query);
             if (!$this->query_) {
@@ -189,7 +101,7 @@
             }
         }
 
-        public function result()
+        protected function result()
         {
             $this->result_ = sql_fetch_assoc($this->query_);
             return $this->result_;
@@ -222,6 +134,97 @@
         {
             return $this->result_ ? True : False;
         }
+    };
+
+
+    class FPDB extends FPDB_Base
+    {
+	    private static $beers_bought_q = "
+            CREATE TEMPORARY TABLE beers_bought_tmp AS (
+                SELECT   beer_id, SUM(amount) AS count
+                FROM     beers_bought
+                GROUP BY beer_id
+	        )";
+
+	    private static $beers_sold_q = "
+            CREATE TEMPORARY TABLE beers_sold_tmp AS (
+                SELECT   beer_id, COUNT(beer_id) AS count
+                FROM     beers_sold
+                GROUP BY beer_id
+	        )";
+
+	    private static $inventory_q = "
+	        CREATE TEMPORARY TABLE inventory_tmp AS (
+		        SELECT    beers_bought_tmp.beer_id,
+			              COALESCE(beers_bought_tmp.count, 0) - COALESCE(beers_sold_tmp.count, 0) AS count
+		        FROM      beers_bought_tmp
+		        LEFT JOIN beers_sold_tmp ON beers_bought_tmp.beer_id = beers_sold_tmp.beer_id
+	    )";
+
+
+        private static $time_charged_q = "
+            CREATE TEMPORARY TABLE time_charged_tmp AS (
+                SELECT  bs.user_id,
+                        bs.beer_id,
+                        bs.timestamp AS time_sold,
+                        (SELECT MAX(bb.timestamp)
+                         FROM   beers_bought bb
+                         WHERE  bb.beer_id = bs.beer_id and
+                                bb.timestamp <= bs.timestamp
+                        ) as time_bought
+                FROM beers_sold bs
+                ORDER BY bs.user_id
+            )";
+
+    	private static $beers_sold_at_price_q = "
+	        CREATE TEMPORARY TABLE beers_sold_at_price_tmp AS (
+		        SELECT  tc.user_id,
+			            tc.beer_id,
+			            u.username,
+			            u.first_name,
+			            u.last_name,
+			            bb.price,
+			            tc.time_sold,
+			            tc.time_bought
+		        FROM    time_charged_tmp tc,
+			            beers_bought bb,
+                        users u
+		        WHERE   tc.beer_id = bb.beer_id and
+			    tc.time_bought = bb.timestamp and
+		        u.user_id = tc.user_id
+         )";
+
+	    private static $beers_bought_total_q = "
+	        CREATE TEMPORARY TABLE beers_bought_total_tmp AS (
+		        SELECT  user_id,
+			            username,
+			            first_name,
+			            last_name,
+			            SUM(price) AS amount
+		        FROM beers_sold_at_price_tmp
+		        GROUP BY user_id
+		        ORDER BY amount DESC
+	        )";
+
+	    private static $payments_total_q = "
+	        CREATE TEMPORARY TABLE payments_total_tmp AS (
+		        SELECT  user_id,
+			            SUM(amount) as total
+		        FROM payments
+		        GROUP BY user_id
+	        )";
+
+	    private static $iou_tmp_q = "
+	        CREATE TEMPORARY TABLE iou_tmp AS (
+		        SELECT  bb.user_id,
+			            bb.username,
+			            bb.first_name,
+			            bb.last_name,
+			            COALESCE(bb.amount, 0) - COALESCE(pa.total, 0) AS amount
+		        FROM      beers_bought_total_tmp bb
+		        LEFT JOIN payments_total_tmp pa
+		        ON        bb.user_id = pa.user_id
+	        )";
 
 
         public function user_get($username = "")
