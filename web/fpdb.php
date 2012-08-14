@@ -1,6 +1,6 @@
 <?php
 
-    include_once "credentials.php";
+    include_once "init/credentials.inc.php";
 
     class FPDBException extends Exception {
 
@@ -97,32 +97,26 @@
 		ON        bb.user_id = pa.user_id
 	    )";
 
-        function __construct($credentails = CRED_USER)
+        function __construct($credentials = CRED_USER)
         {
-            switch ($credentails) {
+            switch ($credentials) {
                 case CRED_USER:
-                    $dbn = array(
-                        "server" => "localhost",
-                        "username" => "fdp",
-                        "password" => "Finish3dKruk4Fronti3r",
-                        "database" => "fdp",
-                    );
+                    include ("/init/user_db_credentials.inc.php");
                     break;
                 case CRED_ADMIN:
-                    $dbn = array(
-                        "server" => "localhost",
-                        "username" => "fdp",
-                        "password" => "Finish3dKruk4Fronti3r",
-                        "database" => "fdp",
-                    );
+                    include ("/init/admin_db_credentials.inc.php");
                     break;
             }
-
-            $this->link = mysqli_connect(
-                $dbn["server"], $dbn["username"], $dbn["password"], $dbn["database"]);
-
-            if (!$this->link) {
-                throw new FPDBException(mysqli_error($this->link));
+            if (isset($dbn)) {
+                $this->link = mysqli_connect(
+                    $dbn["server"], $dbn["username"], $dbn["password"], $dbn["database"]);
+    
+                if (!$this->link) {
+                    throw new FPDBException(mysqli_error($this->link));
+                }
+            }
+            else {
+                echo "You have forgotten to get credentials!";
             }
         }
 

@@ -25,17 +25,16 @@
     $_SESSION["first_name"] = $user["first_name"];
     $_SESSION["last_name"] = $user["last_name"];
     $_SESSION["credentials"] = $user["credentials"];
-
-    include_once "credentials.php";
+    
     switch ($user["credentials"]) {
-        case CRED_ADMIN:
+        case CRED_ADMIN: //defined in init/credentials.inc.php through fpdb.php
             header("location: admin_welcome.php");
             break;
         case CRED_USER:
             header("location: user_welcome.php");
             break;
         default:
-            /* XXX Handle error */
+            /* TODO! Handle error */
             break;
     }
 ?> 

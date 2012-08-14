@@ -1,5 +1,5 @@
 <?php
-    include_once "credentials.php";
+    include_once "init/credentials.inc.php";
     
     session_start() or die("Couldn't start session");
 
