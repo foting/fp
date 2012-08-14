@@ -9,7 +9,7 @@
 
             try {
                 $db = new FPDB($_SESSION["credentials"]);
-            } catch (FPDBException $e) {
+            } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
         ?>
@@ -37,7 +37,7 @@
 
                 try {
                     $db->inventory_append($user_id, $beer_id, $amount, $price);
-                } catch (FPDBException $e) {
+                } catch (FPDB_Exception $e) {
                     die($e->getMessage());
                 }
             }

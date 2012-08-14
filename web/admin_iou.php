@@ -9,7 +9,7 @@
 
             try {
                 $db = new FPDB($_SESSION["credentials"]);
-            } catch (FPDBException $e) {
+            } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
         ?>
@@ -26,7 +26,7 @@
             <?php
                 try {
                     $qres = $db->iou_get();
-                } catch (FPDBException $e) {
+                } catch (FPDB_Exception $e) {
                     die($e->getMessage());
                 }
 

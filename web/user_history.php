@@ -13,14 +13,14 @@
             
             try {
                 $db = new FPDB($_SESSION["credentials"]);
-            } catch (FPDBException $e) {
+            } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
 
             /* List purchases */
             try {
                 $qres = $db->purchase_get($user_id);
-            } catch (FPDBException $e) {
+            } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
 
@@ -34,7 +34,7 @@
             /* List payments */
             try {
                 $qres = $db->payment_get($user_id);
-            } catch (FPDBException $e) {
+            } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
 

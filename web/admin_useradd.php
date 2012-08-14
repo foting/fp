@@ -9,7 +9,7 @@
 
             try {
                 $db = new FPDB($_SESSION["credentials"]);
-            } catch (FPDBException $e) {
+            } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
         ?>
@@ -30,7 +30,7 @@
 
                 try {
                     $db->user_append($username, $password, $first_name, $last_name, $email, $phone);
-                } catch (FPDBException $e) {
+                } catch (FPDB_Exception $e) {
                     die($e->getMessage());
                 }
 

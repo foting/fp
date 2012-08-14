@@ -11,14 +11,14 @@
 
             try {
                 $db = new FPDB($_SESSION["credentials"]);
-            } catch (FPDBException $e) {
+            } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
 
             /* Print radio buttons, one for each beer on inventory. */
             try {
                 $qres = $db->inventory_get();
-            } catch (FPDBException $e) {
+            } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
 
@@ -40,7 +40,7 @@
 
                 try {
                     $db->purchase_append($user_id, $beer_id);
-                } catch (FPDBException $e) {
+                } catch (FPDB_Exception $e) {
                     die($e->getMessage());
                 }
 

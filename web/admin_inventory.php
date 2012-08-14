@@ -10,7 +10,7 @@
 
             try {
                 $db = new FPDB($_SESSION["credentials"]);
-            } catch (FPDBException $e) {
+            } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
         ?>
@@ -24,7 +24,7 @@
             <?php
                 try {
                     $qres = $db->inventory_get();
-                } catch (FPDBException $e) {
+                } catch (FPDB_Exception $e) {
                     die($e->getMessage());
                 }
 

@@ -11,7 +11,7 @@
 
             try {
                 $db = new FPDB();
-            } catch (FPDBException $e) {
+            } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
         ?>
@@ -23,7 +23,7 @@
                     /* User dropdown */
                     try {
                         $qres = $db->user_get();
-                    } catch (FPDBException $e) {
+                    } catch (FPDB_Exception $e) {
                         die($e->getMessage());
                     }
 
@@ -40,7 +40,7 @@
                     /* Beer dropdown */
                     try {
                         $qres = $db->inventory_get();
-                    } catch (FPDBException $e) {
+                    } catch (FPDB_Exception $e) {
                         die($e->getMessage());
                     }
 
@@ -64,7 +64,7 @@
 
                 try {
                     $db->purchase_append($user_id, $beer_id);
-                } catch (FPDBException $e) {
+                } catch (FPDB_Exception $e) {
                     die($e->getMessage());
                 }
             }

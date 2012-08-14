@@ -11,7 +11,7 @@
             try {
                 $db = new FPDB($_SESSION["credentials"]);
                 $iou = $db->iou_get($user_id)->next();
-            } catch (FPDBException $e) {
+            } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
 

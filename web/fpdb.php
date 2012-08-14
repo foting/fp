@@ -53,7 +53,7 @@
     }
 
 
-    class FPDBException extends Exception {
+    class FPDB_Exception extends Exception {
 
     }
 
@@ -119,14 +119,14 @@
             }
 
             if (!isset($dbn)) {
-                throw new FPDBException("Data base credentials not found.");
+                throw new FPDB_Exception("Data base credentials not found.");
             }
 
             $this->link = sql_connect(
                 $dbn["server"], $dbn["username"], $dbn["password"], $dbn["database"]);
 
             if (!$this->link) {
-                throw new FPDBException(sql_error($this->link));
+                throw new FPDB_Exception(sql_error($this->link));
             }
         }
 
@@ -140,7 +140,7 @@
         {
             $results = sql_query($this->link, $query);
             if (!$results) {
-                throw new FPDBException(sql_error($this->link) . ": " . $query);
+                throw new FPDB_Exception(sql_error($this->link) . ": " . $query);
             }
             return new FPDB_Results($results);
         }

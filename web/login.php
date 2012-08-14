@@ -8,7 +8,7 @@
     try {
         $db = new FPDB();
         $qres = $db->user_get($username)->next();
-    } catch (FPDBException $e) {
+    } catch (FPDB_Exception $e) {
         die($e->getMessage());
     }
 

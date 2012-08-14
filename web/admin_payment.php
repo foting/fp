@@ -9,7 +9,7 @@
 
             try {
                 $db = new FPDB($_SESSION["credentials"]);
-            } catch (FPDBException $e) {
+            } catch (FPDB_Exception $e) {
                 die($e->getMessage());
             }
         ?>
@@ -19,7 +19,7 @@
                 <?php
                     try {
                         $qres = $db->user_get();
-                    } catch (FPDBException $e) {
+                    } catch (FPDB_Exception $e) {
                         die($e->getMessage());
                     }
 
@@ -40,7 +40,7 @@
 
                 try {
                     $db->payment_append($user_id, $admin_id, $amount);
-                } catch (FPDBException $e) {
+                } catch (FPDB_Exception $e) {
                     die($e->getMessage());
                 }
 
