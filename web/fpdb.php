@@ -265,9 +265,11 @@
         /* Only *_append method exposed to users */
         public function purchase_append($user_id, $beer_id)
         {
-            $query = sprintf("INSERT INTO beers_sold (user_id, beer_id)
-                     VALUES ('%d', '%d')", $user_id, $beer_id);
-            $this->query($query);
+            $q = sprintf("INSERT INTO beers_sold
+                          (user_id, beer_id)
+                          VALUES ('%d', '%d')",
+                          $user_id, $beer_id);
+            $this->query($q);
         }
 
 
@@ -328,40 +330,59 @@
 
         public function user_append($username, $password, $first_name, $last_name, $email, $phone)
         {
-            $query = sprintf("INSERT INTO users
-                     (credentials, password, username, first_name, last_name, email, phone)
-                     VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s')",
-                     CRED_USER, md5($password), $username, $first_name, $last_name, $email, $phone);
-            $this->query($query);
+            $q = sprintf("INSERT INTO users
+                 (credentials, password, username, first_name, last_name, email, phone)
+                 VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s')",
+                 CRED_USER, md5($password), $username, $first_name, $last_name, $email, $phone);
+            $this->query($q);
         }
 
         public function payment_append($user_id, $admin_id, $amount)
         {
-            $query = sprintf("INSERT INTO payments (user_id, admin_id, amount)
-                     VALUES ('%d', '%d', '%d')", $user_id, $admin_id, $amount);
-            $this->query($query);
+            $q = sprintf("INSERT INTO payments
+                         (user_id, admin_id, amount)
+                         VALUES ('%d', '%d', '%d')",
+                         $user_id, $admin_id, $amount);
+            $this->query($q);
         }
 
         public function inventory_append($user_id, $beer_id, $amount, $price)
         {
-            $query = sprintf("INSERT INTO beers_bought (admin_id, beer_id, amount, price)
-                    VALUES ('%d', '%d', '%d', '%.2f')", $user_id, $beer_id, $amount, $price);
-            $this->query($query);
+            $q = sprintf("INSERT INTO beers_bought
+                          (admin_id, beer_id, amount, price)
+                          VALUES ('%d', '%d', '%d', '%.2f')",
+                          $user_id, $beer_id, $amount, $price);
+            $this->query($q);
         }
 
+    	public function sbl_append($sbl_beer) {
+            $q = "INSERT INTO sbl_beer  VALUES (
+                $beer->nr, 
+                $beer->Artikelid, 
+                $beer->Varnummer,
+                \"$beer->Namn\",
+                \"$beer->Namn2\",
+                $beer->Prisinklmoms,
+                $beer->Volymiml,
+                $beer->PrisPerLiter,
+                \"$beer->Saljstart\",
+                \"$beer->Slutlev\", 
+                \"$beer->Varugrupp\",
+                \"$beer->Forpackning\",
+                \"$beer->Forslutning\",
+                \"$beer->Ursprung\",
+                \"$beer->Ursprunglandnamn\",
+                \"$beer->Producent\",
+                \"$beer->Leverantor\",
+                \"$beer->Argang\",
+                \"$beer->Provadargang\",
+                \"$beer->Alkoholhalt\",
+                \"$beer->Modul\",
+                \"$beer->Sortiment\", 
+                $beer->Ekologisk,
+                $beer->Koscher)";
 
-    /*
-	public function sbl_beer_table_nuke($sbl_xml) {
-	    $sbl_beers = simplexml_load_file($sbl_xml);
-	     
-	    foreach ($sbl_beers->artikel as $beer) {
-		$this->query("INSERT INTO sbl_beer VALUES ($beer->nr, $beer->Artikelid, $beer->Varnummer,
-		\"$beer->Namn\", \"$beer->Namn2\", $beer->Prisinklmoms, $beer->Volymiml, $beer->PrisPerLiter, \"$beer->Saljstart\",
-		\"$beer->Slutlev\", \"$beer->Varugrupp\", \"$beer->Forpackning\", \"$beer->Forslutning\", \"$beer->Ursprung\",
-		\"$beer->Ursprunglandnamn\", \"$beer->Producent\", \"$beer->Leverantor\", \"$beer->Argang\", \"$beer->Provadargang\",
-		\"$beer->Alkoholhalt\", \"$beer->Modul\", \"$beer->Sortiment\", $beer->Ekologisk, $beer->Koscher)");
-	    }
-	}	  
-    */
+            $this->query($q);
+	    }	  
     };
 ?>
