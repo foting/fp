@@ -30,6 +30,11 @@
             </table>
         </form>
 
+        <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
+            Update database with the lastest info from systembolaget:
+            <input type="submit" name="submit_sbl" value="update"/>
+        </form>
+
         <?php
             if (isset($_POST["submit"])) {
                 $user_id = $_SESSION["user_id"];
@@ -37,6 +42,15 @@
 
                 try {
                     $db->inventory_append($user_id, $beer_id, $amount, $price);
+                } catch (FPDB_Exception $e) {
+                    die($e->getMessage());
+                }
+            } 
+
+            if (isset($_POST["submit_sbl"])) {
+                try {
+                    /* Hardcode file path for now. */
+                    sbl_insert_snapshot($db, "../sbl-2012-08-15.xml");
                 } catch (FPDB_Exception $e) {
                     die($e->getMessage());
                 }

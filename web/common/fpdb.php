@@ -380,34 +380,78 @@
             $this->query($q);
         }
 
-    	public function sbl_append($sbl_beer) {
-            $q = "INSERT INTO sbl_beer  VALUES (
-                $beer->nr, 
-                $beer->Artikelid, 
-                $beer->Varnummer,
-                \"$beer->Namn\",
-                \"$beer->Namn2\",
-                $beer->Prisinklmoms,
-                $beer->Volymiml,
-                $beer->PrisPerLiter,
-                \"$beer->Saljstart\",
-                \"$beer->Slutlev\", 
-                \"$beer->Varugrupp\",
-                \"$beer->Forpackning\",
-                \"$beer->Forslutning\",
-                \"$beer->Ursprung\",
-                \"$beer->Ursprunglandnamn\",
-                \"$beer->Producent\",
-                \"$beer->Leverantor\",
-                \"$beer->Argang\",
-                \"$beer->Provadargang\",
-                \"$beer->Alkoholhalt\",
-                \"$beer->Modul\",
-                \"$beer->Sortiment\", 
-                $beer->Ekologisk,
-                $beer->Koscher)";
+    	public function sbl_append($beer)
+        {
+            $q = "INSERT INTO sbl_beer (
+                    nr,
+                    Artikelid,
+                    Varnummer,
+                    Namn,
+                    Namn2,
+                    Prisinklmoms,
+                    Saljstart,
+                    Slutlev,
+                    Varugrupp,
+                    Forpackning,
+                    Forslutning,
+                    Ursprung,
+                    Ursprunglandnamn,
+                    Producent,
+                    Leverantor,
+                    Argang,
+                    Provadargang,
+                    Alkoholhalt,
+                    Modul,
+                    Sortiment,
+                    Ekologisk,
+                    Koscher
+                ) VALUES (
+                    \"$beer->nr\",
+                    \"$beer->Artikelid\",
+                    \"$beer->Varnummer\",
+                    \"$beer->Namn\",
+                    \"$beer->Namn2\",
+                    \"$beer->Prisinklmoms\",
+                    \"$beer->Saljstart\",
+                    \"$beer->Slutlev\",
+                    \"$beer->Varugrupp\",
+                    \"$beer->Forpackning\",
+                    \"$beer->Forslutning\",
+                    \"$beer->Ursprung\",
+                    \"$beer->Ursprunglandnamn\",
+                    \"$beer->Producent\",
+                    \"$beer->Leverantor\",
+                    \"$beer->Argang\",
+                    \"$beer->Provadargang\",
+                    \"$beer->Alkoholhalt\",
+                    \"$beer->Modul\",
+                    \"$beer->Sortiment\",
+                    \"$beer->Ekologisk\",
+                    \"$beer->Koscher\"
+                )";
 
             $this->query($q);
-	    }	  
+        }
+
+        public function sbl_nuke()
+        {
+            $this->query("TRUNCATE TABLE sbl_beer");
+        }
     };
+
+    /* Temporarily putting this functionality here */
+    function sbl_insert_snapshot($fpdb, $filename)
+    {
+        $fpdb->sbl_nuke();
+
+        $sbl_beers = simplexml_load_file($filename);
+        if (!$sbl_beers) {
+            /* When/If this function is moved throw something more appropriate */
+            throw new FPDB_Exception("simplexml_load_file failed");
+        }
+
+        foreach ($sbl_beers->artikel as $beer) {
+            $fpdb->sbl_append($beer);
+        }
+    }
 ?>
