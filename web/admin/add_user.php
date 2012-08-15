@@ -4,8 +4,8 @@
     </head>
     <body>
         <?php
-            include_once "admin_header.php";
-            include_once "fpdb.php";
+            include_once "../admin/header.php";
+            include_once "../common/fpdb.php";
 
             try {
                 $db = new FPDB_Admin($_SESSION["credentials"]);

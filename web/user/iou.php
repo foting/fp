@@ -4,8 +4,8 @@
     </head>
     <body>
         <?php
-            include_once "user_header.php";
-            include_once "fpdb.php";
+            include_once "../user/header.php";
+            include_once "../common/fpdb.php";
 
             $user_id = $_SESSION["user_id"];
             try {

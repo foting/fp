@@ -4,7 +4,7 @@
     $username = htmlspecialchars($_POST["username"]);
     $password = htmlspecialchars($_POST["password"]);
 
-    include_once "fpdb.php";
+    include_once "../common/fpdb.php";
     try {
         $db = new FPDB_User();
         $qres = $db->user_get($username)->next();
@@ -29,10 +29,10 @@
     
     switch ($qres["credentials"]) {
         case CRED_ADMIN: //defined in init/credentials.inc.php through fpdb.php
-            header("location: admin_welcome.php");
+            header("location: ../admin/welcome.php");
             break;
         case CRED_USER:
-            header("location: user_welcome.php");
+            header("location: ../user/welcome.php");
             break;
         default:
             /* TODO! Handle error */

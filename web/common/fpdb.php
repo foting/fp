@@ -1,6 +1,6 @@
 <?php
 
-    include_once "include/credentials.php";
+    include_once "../include/credentials.php";
 
     /* Not all server at uni supports mysqli hence these wrappers */
     function sql_connect($server, $username, $password, $database)
@@ -262,7 +262,7 @@
 
         function __construct()
         {
-            include "include/user_db_credentials.php";
+            include "../include/user_db_credentials.php";
             if (!isset($dbn)) {
                 throw new FPDB_Exception("Data base credentials not found.");
             }
@@ -346,7 +346,7 @@
     {
         function __construct()
         {
-            include "include/admin_db_credentials.php";
+            include "../include/admin_db_credentials.php";
             if (!isset($dbn)) {
                 throw new FPDB_Exception("Data base credentials not found.");
             }

@@ -4,9 +4,9 @@
     </head>
     <body>
         <?php
-            include_once "admin_header.php";
-            include_once "fpdb.php";
-            include_once "snapshot_hack.php";
+            include_once "../admin/header.php";
+            include_once "../common/fpdb.php";
+            include_once "../common/snapshot_hack.php";
 
             try {
                 $db = new FPDB_Admin();
