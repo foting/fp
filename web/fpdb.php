@@ -211,17 +211,53 @@
 		        GROUP BY user_id
 	        )";
 
-	    protected $iou_tmp_q = "
-	        CREATE TEMPORARY TABLE iou_tmp AS (
-		        SELECT  bb.user_id,
-			            bb.username,
-			            bb.first_name,
-			            bb.last_name,
-			            COALESCE(bb.amount, 0) - COALESCE(pa.total, 0) AS amount
-		        FROM      beers_bought_total_tmp bb
-		        LEFT JOIN payments_total_tmp pa
-		        ON        bb.user_id = pa.user_id
-	        )";
+    	protected $iou_q = "
+			SELECT users.user_id, first_name, last_name, assets FROM users RIGHT JOIN (
+                SELECT user_id, SUM(assets) AS assets FROM (
+                    SELECT user_id, SUM(amount) AS assets
+                            FROM payments GROUP BY user_id
+                    UNION
+                    SELECT user_id, -SUM(price) FROM (
+                            SELECT * FROM (
+                                SELECT
+                                    beers_sold.user_id,
+                                    beers_sold.transaction_id,
+                                    beers_bought.price #,
+                                FROM beers_sold LEFT JOIN beers_bought
+                                    ON beers_bought.beer_id = beers_sold.beer_id
+                                    WHERE beers_sold.timestamp > beers_bought.timestamp
+                                    ORDER BY beers_bought.timestamp DESC
+                                ) AS T
+                            GROUP BY T.transaction_id
+                    ) AS S GROUP BY user_id
+                ) AS TOTAL_ASSETS GROUP BY user_id
+            ) AS DEBT_LIST
+            ON users.user_id = DEBT_LIST.user_id
+            WHERE DEBT_LIST.user_id='%s'";
+    	    
+	    protected $iou_all_q = "
+	        SELECT username, first_name, last_name, assets FROM users RIGHT JOIN (
+                SELECT user_id, SUM(assets) AS assets FROM (
+                    SELECT user_id, SUM(amount) AS assets
+                            FROM payments GROUP BY user_id
+                    UNION
+                    SELECT user_id, -SUM(price) FROM (
+                            SELECT * FROM (
+                                SELECT
+                                    beers_sold.user_id,
+                                    beers_sold.transaction_id,
+                                    beers_bought.price #,
+                                FROM beers_sold LEFT JOIN beers_bought
+                                    ON beers_bought.beer_id = beers_sold.beer_id
+                                    WHERE beers_sold.timestamp > beers_bought.timestamp
+                                    ORDER BY beers_bought.timestamp DESC
+                                ) AS T
+                            GROUP BY T.transaction_id
+                    ) AS S GROUP BY user_id
+                ) AS TOTAL_ASSETS GROUP BY user_id
+            ) AS DEBT_LIST
+            ON users.user_id = DEBT_LIST.user_id
+            ORDER BY assets ASC";
 
 
         function __construct()
@@ -296,24 +332,13 @@
 
         public function iou_get($user_id)
         {
-            $this->query($this->time_charged_q);
-            $this->query($this->beers_sold_at_price_q);
-            $this->query($this->beers_bought_total_q);
-            $this->query($this->payments_total_q);
-            $this->query($this->iou_tmp_q);
-
-            $q = sprintf("SELECT * FROM iou_tmp WHERE user_id = %d", $user_id);
+            $q = sprintf($this->iou_q, $user_id);
             return $this->query($q);
 	    }
 
         public function iou_get_all()
         {
-            $this->query($this->time_charged_q);
-            $this->query($this->beers_sold_at_price_q);
-            $this->query($this->beers_bought_total_q);
-            $this->query($this->payments_total_q);
-            $this->query($this->iou_tmp_q);
-            return $this->query("SELECT * FROM iou_tmp");
+            return $this->query($this->iou_all_q);
 	    }
     };
 

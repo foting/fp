@@ -19,7 +19,7 @@
                 <th>username</th>
                 <th>first_name</th>
                 <th>last_name</th>
-                <th>amount</th>
+                <th>assets</th>
 
             </tr>
 
@@ -34,7 +34,7 @@
                     extract($user_iou);
 
                     printf("<tr><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>", 
-                        $username, $first_name, $last_name, $amount);
+                        $username, $first_name, $last_name, $assets);
                 }
             ?>
         </table>

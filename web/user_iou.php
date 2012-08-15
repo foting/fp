@@ -16,7 +16,7 @@
             }
 
             extract($iou);
-            printf("<h1>%dkr</h1></br>", $amount);
+            printf("<h1>%dkr</h1></br>", $assets);
 
 
         ?>
