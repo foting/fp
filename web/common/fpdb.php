@@ -102,18 +102,15 @@
 
     class FPDB_Base
     {
-        private $link;
+        private $link = False;
         private $query_ = False;
         private $result_ = False;
         private $position = 0;
 
         function __construct($dbn)
         {
-            $this->link = sql_connect(
-                $dbn["server"], $dbn["username"], $dbn["password"], $dbn["database"]);
-
-            if (!$this->link) {
-                throw new FPDB_Exception(sql_error($this->link));
+            if ($dbn) {
+                $this->connect($dbn);
             }
         }
 
@@ -122,8 +119,21 @@
             sql_close($this->link);
         }
 
+        public function connect($dbn)
+        {
+            if ($this->link) {
+                throw new FPDB_Exception("Error: FPDB_Base: Already connected.");
+            }
 
-        protected function query($query)
+            $this->link = sql_connect(
+                $dbn["server"], $dbn["username"], $dbn["password"], $dbn["database"]);
+
+            if (!$this->link) {
+                throw new FPDB_Exception(sql_error($this->link));
+            }
+        }
+
+        public function query($query)
         {
             $results = sql_query($this->link, $query);
             if (!$results) {
@@ -264,9 +274,9 @@
         {
             include "../include/user_db_credentials.php";
             if (!isset($dbn)) {
-                throw new FPDB_Exception("Data base credentials not found.");
+                throw new FPDB_Exception("Failed to import \$dbn from user_db_credentials.php.");
             }
-            parent::__construct($dbn);
+            $this->connect($dbn);
         }
 
 
@@ -348,9 +358,9 @@
         {
             include "../include/admin_db_credentials.php";
             if (!isset($dbn)) {
-                throw new FPDB_Exception("Data base credentials not found.");
+                throw new FPDB_Exception("Failed to import \$dbn from admin_db_credentials.php");
             }
-            parent::__construct($dbn);
+            $this->connect($dbn);
         }
 
         public function user_append($username, $password, $first_name, $last_name, $email, $phone)
@@ -447,7 +457,7 @@
         $sbl_beers = simplexml_load_file($filename);
         if (!$sbl_beers) {
             /* When/If this function is moved throw something more appropriate */
-            throw new FPDB_Exception("simplexml_load_file failed");
+            throw new FPDB_Exception("Error: sbl_insert_snapshot: simplexml_load_file failed");
         }
 
         foreach ($sbl_beers->artikel as $beer) {
