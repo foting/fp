@@ -1,35 +1,24 @@
 <html>
     <head>
-        <title> FridayPub </title>
+    	<link rel="stylesheet" href="css/friday_pub.css">
+    	<link href='http://fonts.googleapis.com/css?family=Fredoka+One&v2' rel='stylesheet' type='text/css'>
+	
+		<!--[if IE]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+      <link rel="stylesheet" href="css/ie.css" />
+  <![endif]-->
+        <title> Friday Pub </title>
     </head>
     <body>
-        <p>It's Friday! Are you ready to get drunk?</p>
+    <center>
+        <h1>It's Friday!</h1>
+        <p>Are you ready to get <span class="strike">drunk</span> nice?</p>
 
-        <table width="300" border="0" cellpadding="0" cellspacing="1" bgcolor="#CCCCCC">
-            <tr>
             <form name="form1" method="post" action="login.php">
-            <td>
-            <table width="100%" border="0" cellpadding="3" cellspacing="1" bgcolor="#FFFFFF">
-            <tr>
-                <td width="78">Username</td>
-                <td width="6">:</td>
-                <td width="294"><input type="text" required="required" name="username"></td>
-            </tr>
-            <tr>
-                <td>Password</td>
-                <td>:</td>
-                <td><input type="password" required="required" name="password" ></td>
-            </tr>
-            <tr>
-                <td>&nbsp;</td>
-                <td>&nbsp;</td>
-                <td><input type="submit" name="submit" value="Login"></td>
-            </tr>
-            </table>
-            </td>
+				<input type="text" required="required" name="username" placeholder="Username"><br>
+				<input type="password" required="required" name="password" placeholder="Password"><br>
+				<input class="login" type="submit" name="submit" value="Login">
             </form>
-           </tr>
-        </table>
-
+	</center>
     <body>
 </html> 
