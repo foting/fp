@@ -174,13 +174,21 @@ body {
 	font-size: 2em;
 	color: #227596;
 	background: #90ecff;
+	margin-left:1em;
 }
 
 h1 {
 	color: #f092a5;
-	font-size: 2.8em;
+	font-size: 3.2em;
+	text-shadow: -3px 2px #ffeeee, 2px 3px #ffeeee, 3px 3px #ffeeee, 1px -2px #ffeeee;
+	font-weight: 400;
 }
 
+hr {
+	color: #227596;
+	background-color: #227596;
+	height:4px;
+}
 form {
 	margin-top:1em;
 }
@@ -193,6 +201,10 @@ select, input, textarea, button {
 input {
 	margin: 0.2em;
 	padding:0.3em;
+	border: 2px solid #f092a5;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	border-radius: 10px;
 }
 
 .login {
