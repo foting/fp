@@ -50,7 +50,7 @@
             if (isset($_POST["submit_sbl"])) {
                 try {
                     /* Hardcode file path for now. */
-                    sbl_insert_snapshot($db, "../sbl-2012-08-15.xml");
+                    sbl_insert_snapshot($db, "../sbl-latest.xml");
                 } catch (FPDB_Exception $e) {
                     die($e->getMessage());
                 }
