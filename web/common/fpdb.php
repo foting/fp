@@ -146,80 +146,16 @@
 
     class FPDB_User extends FPDB_Base
     {
-	    protected $beers_bought_q = "
-            CREATE TEMPORARY TABLE beers_bought_tmp AS (
-                SELECT   beer_id, SUM(amount) AS count
-                FROM     beers_bought
-                GROUP BY beer_id
-	        )";
-
-	    protected $beers_sold_q = "
-            CREATE TEMPORARY TABLE beers_sold_tmp AS (
-                SELECT   beer_id, COUNT(beer_id) AS count
-                FROM     beers_sold
-                GROUP BY beer_id
-	        )";
-
 	    protected $inventory_q = "
-	        CREATE TEMPORARY TABLE inventory_tmp AS (
-		        SELECT    beers_bought_tmp.beer_id,
-			              COALESCE(beers_bought_tmp.count, 0) - COALESCE(beers_sold_tmp.count, 0) AS count
-		        FROM      beers_bought_tmp
-		        LEFT JOIN beers_sold_tmp ON beers_bought_tmp.beer_id = beers_sold_tmp.beer_id
-	    )";
-
-
-        protected $time_charged_q = "
-            CREATE TEMPORARY TABLE time_charged_tmp AS (
-                SELECT  bs.user_id,
-                        bs.beer_id,
-                        bs.timestamp AS time_sold,
-                        (SELECT MAX(bb.timestamp)
-                         FROM   beers_bought bb
-                         WHERE  bb.beer_id = bs.beer_id and
-                                bb.timestamp <= bs.timestamp
-                        ) as time_bought
-                FROM beers_sold bs
-                ORDER BY bs.user_id
-            )";
-
-    	protected $beers_sold_at_price_q = "
-	        CREATE TEMPORARY TABLE beers_sold_at_price_tmp AS (
-		        SELECT  tc.user_id,
-			            tc.beer_id,
-			            u.username,
-			            u.first_name,
-			            u.last_name,
-			            bb.price,
-			            tc.time_sold,
-			            tc.time_bought
-		        FROM    time_charged_tmp tc,
-			            beers_bought bb,
-                        users u
-		        WHERE   tc.beer_id = bb.beer_id and
-			    tc.time_bought = bb.timestamp and
-		        u.user_id = tc.user_id
-         )";
-
-	    protected $beers_bought_total_q = "
-	        CREATE TEMPORARY TABLE beers_bought_total_tmp AS (
-		        SELECT  user_id,
-			            username,
-			            first_name,
-			            last_name,
-			            SUM(price) AS amount
-		        FROM beers_sold_at_price_tmp
-		        GROUP BY user_id
-		        ORDER BY amount DESC
-	        )";
-
-	    protected $payments_total_q = "
-	        CREATE TEMPORARY TABLE payments_total_tmp AS (
-		        SELECT  user_id,
-			            SUM(amount) as total
-		        FROM payments
-		        GROUP BY user_id
-	        )";
+	        SELECT beer_id, SUM(count) AS count FROM
+                (SELECT beer_id, SUM(amount) AS count
+                	FROM beers_bought
+                	GROUP BY beer_id
+        		UNION
+                SELECT beer_id, -COUNT(beer_id) AS count
+               		FROM beers_sold
+               		GROUP BY beer_id) A
+            GROUP BY A.beer_id";
 
     	protected $iou_q = "
 			SELECT users.user_id, first_name, last_name, assets FROM users RIGHT JOIN (
@@ -269,7 +205,30 @@
             ON users.user_id = DEBT_LIST.user_id
             ORDER BY assets ASC";
 
-
+	    protected $purchase_history_q = "
+        	SELECT * FROM (
+        		SELECT
+        			beers_sold.*,
+        			beers_bought.price
+        		FROM beers_sold LEFT JOIN beers_bought
+        		ON beers_bought.beer_id = beers_sold.beer_id
+        		WHERE beers_sold.timestamp > beers_bought.timestamp
+        		ORDER BY beers_bought.timestamp DESC
+            ) AS T WHERE T.user_id = %s
+    		GROUP BY T.transaction_id ORDER BY T.timestamp";
+	            
+        protected $purchase_history_all_q = "
+        	SELECT * FROM (
+        		SELECT
+        			beers_sold.*,
+        			beers_bought.price
+        		FROM beers_sold LEFT JOIN beers_bought
+        		ON beers_bought.beer_id = beers_sold.beer_id
+        		WHERE beers_sold.timestamp > beers_bought.timestamp
+        		ORDER BY beers_bought.timestamp DESC
+            ) AS T
+    		GROUP BY T.transaction_id ORDER BY T.timestamp";
+        
         function __construct()
         {
             include "../include/user_db_credentials.php";
@@ -295,17 +254,13 @@
 
         public function purchase_get($user_id)
         {
-            $this->query($this->time_charged_q);
-            $this->query($this->beers_sold_at_price_q);
-            $q = sprintf("SELECT * FROM beers_sold_at_price_tmp WHERE user_id = '%s'", $user_id);
+            $q = sprintf($this->purchase_history_q, $user_id);
             return $this->query($q);
         }
 
         public function purchase_get_all()
-        {
-            $this->query($this->time_charged_q);
-            $this->query($this->beers_sold_at_price_q);
-            return $this->query("SELECT * FROM beers_sold_at_price_tmp");
+        {            
+            return $this->query($this->purchase_history_all_q);
         }
 
         /* Only *_append method exposed to users */
@@ -333,10 +288,7 @@
 
         public function inventory_get_all()
         {
-            $this->query($this->beers_bought_q);     
-            $this->query($this->beers_sold_q);           
-            $this->query($this->inventory_q);
-            return $this->query("SELECT * FROM inventory_tmp;");
+            return $this->query($this->inventory_q);
         }
 
 
