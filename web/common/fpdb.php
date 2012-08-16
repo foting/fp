@@ -147,7 +147,8 @@
     class FPDB_User extends FPDB_Base
     {
 	    protected $inventory_q = "
-	        SELECT namn, BEERS.beer_id, BEERS.count FROM
+	    SELECT NAMED.*, price FROM (
+	    	SELECT namn, BEERS.beer_id, BEERS.count FROM
            		sbl_beer
             RIGHT JOIN (
     			SELECT beer_id, SUM(count) AS count FROM
@@ -159,7 +160,10 @@
                    		FROM beers_sold
                    		GROUP BY beer_id) A
                 GROUP BY A.beer_id ) AS BEERS
-            ON BEERS.beer_id = sbl_beer.nr";
+            ON BEERS.beer_id = sbl_beer.nr) AS NAMED
+		LEFT JOIN
+			beers_bought
+		ON beers_bought.beer_id = NAMED.beer_id";
 
     	protected $iou_q = "
 			SELECT users.user_id, first_name, last_name, assets FROM users RIGHT JOIN (

@@ -19,9 +19,10 @@
     foreach ($qres as $inventory_item) {
         $beer_name = $inventory_item["namn"];
         $beer_id = $inventory_item["beer_id"];
+        $beer_price = $inventory_item["price"];
 
-        printf("<input type=\"radio\" name=\"beer_id\" value=%d> %s </br>", 
-            $beer_id, $beer_name);
+        printf("<input type=\"radio\" name=\"beer_id\" value=%d> %s, %d kr</br>", 
+            $beer_id, $beer_name, $beer_price);
     }
     printf("<input type=\"submit\" name=\"submit\" value=\"Register\"/>");
     printf("</form>");
