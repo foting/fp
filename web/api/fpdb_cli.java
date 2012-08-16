@@ -3,29 +3,29 @@ import java.io.*;
 import org.json.simple.*;
 
 
-class FPDB_Error extends Exception
+class FPDBException extends Exception
 {
-    public FPDB_Error(String m)
+    public FPDBException(String m)
     {
         super(m);
     }
 }
 
-class FPDB_Reply implements Iterable<Map<String, String>>
+class FPDBReply implements Iterable<Map<String, String>>
 {
     public String type;
     public List<Map<String, String>> payload;
 
-    public FPDB_Reply(JSONObject jobj) throws FPDB_Error
+    public FPDBReply(JSONObject jobj) throws FPDBException
     {
         type = (String)jobj.get("type");
         if (type == null) {
-            throw new FPDB_Error("Reply has no type attribute");
+            throw new FPDBException("Reply has no type attribute");
         }
 
         payload = (List<Map<String, String>>)jobj.get("payload");
         if (payload == null) {
-            throw new FPDB_Error("Reply has no payload attribute");
+            throw new FPDBException("Reply has no payload attribute");
         }
     }
 
@@ -36,9 +36,9 @@ class FPDB_Reply implements Iterable<Map<String, String>>
     }
 }
 
-class FPDB_Api
+class FPDB
 {
-    public static JSONObject http_get(String url) throws FPDB_Error
+    public static JSONObject http_get(String url) throws FPDBException
     {
         String jstr = "";
         JSONObject jobj;
@@ -56,24 +56,22 @@ class FPDB_Api
             }
             br.close();
         } catch (IOException e) {
-            throw new FPDB_Error(e.getMessage());
+            throw new FPDBException(e.getMessage());
         }
-
             
         jobj = (JSONObject)JSONValue.parse(jstr);
         if (jobj == null) {
-            throw new FPDB_Error("Parsing failed");
+            throw new FPDBException("Parsing failed");
         }
 
         return jobj;
     }
 
-
-    public static FPDB_Reply request(String url) throws FPDB_Error
+    public static FPDBReply request(String url) throws FPDBException
     {
-        FPDB_Reply reply = new FPDB_Reply(http_get(url));
+        FPDBReply reply = new FPDBReply(http_get(url));
         if (reply.type.equals("error")) {
-           throw new FPDB_Error(reply.payload.get(0).get("error"));
+           throw new FPDBException(reply.payload.get(0).get("error"));
         }
         return reply;
     }
@@ -81,11 +79,11 @@ class FPDB_Api
 
 
 
-class FPDB_Cli
+class FPDBCli
 {
     public static void main(String[] args)
     {
-        FPDB_Reply reply = null;
+        FPDBReply reply = null;
 
         if (args.length != 1) {
             System.out.println("Usage: FPDB_Cli url");
@@ -93,8 +91,8 @@ class FPDB_Cli
         }
 
         try {
-            reply = FPDB_Api.request(args[0]);
-        } catch (FPDB_Error e) {
+            reply = FPDB.request(args[0]);
+        } catch (FPDBException e) {
             System.out.println(e);
             System.exit(-1);
         }
