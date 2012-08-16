@@ -70,6 +70,15 @@
             $this->position = 0;
         }
 
+        public function get_array()
+        {
+            $a = array();
+            while ($iter = sql_fetch_assoc($this->sql_results)) {
+                array_push($a, $iter);
+            }
+            return $a;
+        }
+
         /* Iterator interface */
         public function current()
         {
@@ -98,7 +107,8 @@
         {
             return $this->iterator ? True : False;
         }
-    };
+
+    }
 
     class FPDB_Base
     {

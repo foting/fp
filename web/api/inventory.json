@@ -1,0 +1,14 @@
+{
+    "type"    : "invetory",
+    "error"   : 0,
+    "payload" : [
+        {
+            "beer_id" : "1234",
+            "count"   : "4321"
+        },
+        {
+            "beer_id" : "1234",
+            "count"   : "4321"
+        }
+    ]
+}
