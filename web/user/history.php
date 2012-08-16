@@ -20,9 +20,8 @@
 
     printf("Purchases:</br>");
     foreach ($qres as $purchase) {
-        //TODO! Fix so that beer name is retrieved in the query.
         printf("%s: %s %d</br>",
-            $purchase["timestamp"], beer_name($purchase["beer_id"]), $purchase["price"]);
+            $purchase["timestamp"], $purchase["namn"], $purchase["beer_id"], $purchase["price"]);
     }
     printf("<hr>");
     

@@ -147,15 +147,19 @@
     class FPDB_User extends FPDB_Base
     {
 	    protected $inventory_q = "
-	        SELECT beer_id, SUM(count) AS count FROM
-                (SELECT beer_id, SUM(amount) AS count
-                	FROM beers_bought
-                	GROUP BY beer_id
-        		UNION
-                SELECT beer_id, -COUNT(beer_id) AS count
-               		FROM beers_sold
-               		GROUP BY beer_id) A
-            GROUP BY A.beer_id";
+	        SELECT namn, BEERS.beer_id, BEERS.count FROM
+           		sbl_beer
+            RIGHT JOIN (
+    			SELECT beer_id, SUM(count) AS count FROM
+                    (SELECT beer_id, SUM(amount) AS count
+                    	FROM beers_bought
+                    	GROUP BY beer_id
+            		UNION
+                    SELECT beer_id, -COUNT(beer_id) AS count
+                   		FROM beers_sold
+                   		GROUP BY beer_id) A
+                GROUP BY A.beer_id ) AS BEERS
+            ON BEERS.beer_id = sbl_beer.nr";
 
     	protected $iou_q = "
 			SELECT users.user_id, first_name, last_name, assets FROM users RIGHT JOIN (
@@ -206,18 +210,25 @@
             ORDER BY assets ASC";
 
 	    protected $purchase_history_q = "
-        	SELECT * FROM (
-        		SELECT
-        			beers_sold.*,
-        			beers_bought.price
-        		FROM beers_sold LEFT JOIN beers_bought
-        		ON beers_bought.beer_id = beers_sold.beer_id
-        		WHERE beers_sold.timestamp > beers_bought.timestamp
-        		ORDER BY beers_bought.timestamp DESC
-            ) AS T WHERE T.user_id = %s
-    		GROUP BY T.transaction_id ORDER BY T.timestamp";
+    		SELECT namn, Purchases.* FROM
+            	sbl_beer
+            RIGHT JOIN (
+            	SELECT * FROM (
+            		SELECT
+            			beers_sold.*,
+            			beers_bought.price
+            		FROM beers_sold LEFT JOIN beers_bought
+            		ON beers_bought.beer_id = beers_sold.beer_id
+            		WHERE beers_sold.timestamp > beers_bought.timestamp
+            		ORDER BY beers_bought.timestamp DESC
+                ) AS T WHERE T.user_id = 2
+        		GROUP BY T.transaction_id ORDER BY T.timestamp) AS Purchases
+    		ON Purchases.beer_id = sbl_beer.nr";
 	            
         protected $purchase_history_all_q = "
+        	SELECT namn, Purchases.* FROM
+            	sbl_beer
+            RIGHT JOIN (
         	SELECT * FROM (
         		SELECT
         			beers_sold.*,
@@ -227,7 +238,8 @@
         		WHERE beers_sold.timestamp > beers_bought.timestamp
         		ORDER BY beers_bought.timestamp DESC
             ) AS T
-    		GROUP BY T.transaction_id ORDER BY T.timestamp";
+    		GROUP BY T.transaction_id ORDER BY T.timestamp) AS Purchases
+    		ON Purchases.beer_id = sbl_beer.nr";
         
         function __construct()
         {

@@ -18,10 +18,11 @@
 
     printf("<form action=\"%s\" method=\"post\">", $_SERVER["PHP_SELF"]);
     foreach ($qres as $inventory_item) {
+        $beer_name = $inventory_item["namn"];
         $beer_id = $inventory_item["beer_id"];
 
         printf("<input type=\"radio\" name=\"beer_id\" value=%d> %s </br>", 
-            $beer_id, beer_name($beer_id));
+            $beer_id, $beer_name);
     }
     printf("<input type=\"submit\" name=\"submit\" value=\"Register\"/>");
     printf("</form>");

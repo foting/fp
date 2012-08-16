@@ -25,11 +25,12 @@
 
         /* For each beer in inventory, insert row a in the table */
         foreach ($qres as $inventory_item) {
+            $beer_name = $inventory_item["namn"];
             $beer_id = $inventory_item["beer_id"];
             $count = $inventory_item["count"];
 
-            printf("<tr><td>%s</td><td>%d</td></tr>",
-                beer_name($beer_id), $count);
+            printf("<tr><td>%s (%s)</td><td>%d</td></tr>",
+                $beer_name, $beer_id, $count);
         }
     ?>
 
