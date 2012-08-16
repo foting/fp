@@ -207,6 +207,22 @@ input {
 	border-radius: 10px;
 }
 
+th, td {
+	padding:0.2em;
+	border-top: 3px dotted #227596;
+	vertical-align: middle;
+}
+
+th {
+	font-weight:400;
+	font-size:0.8em;
+	color: #f092a5;
+}
+
+.face {
+	float:right;
+	margin-right:2em;
+}
 .login {
 	color: #FFF;
 	padding: 0.2em 1em;

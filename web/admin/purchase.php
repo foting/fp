@@ -1,7 +1,6 @@
 <?php
     include_once "header.php";
     include_once "../common/fpdb.php";
-    include_once "../common/snapshot_hack.php";
 
     try {
         $db = new FPDB_Admin();
@@ -39,10 +38,11 @@
             }
 
             foreach ($qres as $inventory_item) {
+                $beer_name = $inventory_item["namn"];
                 $beer_id = $inventory_item["beer_id"];
 
                 printf("<option value = %d> %s </option>", 
-                    $beer_id, beer_name($beer_id));
+                    $beer_id, $beer_name);
             }
         ?>
 

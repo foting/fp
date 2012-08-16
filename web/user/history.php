@@ -1,7 +1,6 @@
 <?php
     include_once "header.php";
     include_once "../common/fpdb.php";
-    include_once "../common/snapshot_hack.php";
 
     try {
         $db = new FPDB_User();
@@ -19,11 +18,12 @@
     }
 
     printf("Purchases:</br>");
+    printf("<table class=\"history\">");
     foreach ($qres as $purchase) {
-        printf("%s: %s %d</br>",
+        printf("<tr><th>%s</th><td>%s (%d)</td><td>%d kr</td></tr>",
             $purchase["timestamp"], $purchase["namn"], $purchase["beer_id"], $purchase["price"]);
     }
-    printf("<hr>");
+    printf("</table><hr>");
     
     /* List payments */
     try {
@@ -33,9 +33,11 @@
     }
 
     printf("Payments:</br>");
+    printf("<table class=\"history\">");
     foreach ($qres as $payment) {
-        printf("%s: %dkr</br>",
+        printf("<tr><th>%s</th><td>%d kr</td></tr>",
             $payment["timestamp"], $payment["amount"]);
     }
+    printf("</table><hr>");
     include_once "footer.php"; 
 ?>

@@ -1,7 +1,6 @@
 <?php
     include_once "header.php";
     include_once "../common/fpdb.php";
-    include_once "../common/snapshot_hack.php";
 
     try {
         $db = new FPDB_Admin();
