@@ -11,7 +11,7 @@
     }
 
     extract($iou);
-    if ($assets > 0) {
+    if ($assets >= 0) {
         printf("<img class=\"face\" src=\"../images/good.png\">");
         printf("<h1>I'm good!</h1>");
         printf("Many money in the bank:");
@@ -21,7 +21,8 @@
         printf("<img class=\"face\" src=\"../images/bad.png\">");
         printf("<h1>Oh nooo!</h1> Y U put me in debt?");
     }
-    printf("<h1>%dkr</h1>", $assets);
+    echo "<h1>$assets kr</h1>";
+    //printf("%d kr", $assets); 
 
     include_once "footer.php"; 
 ?>
