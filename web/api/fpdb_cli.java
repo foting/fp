@@ -19,7 +19,6 @@ class FPDB_Error extends Exception
 class FPDB_Reply implements Iterable<Map<String, String>>
 {
     public String type;
-    public int error;
     Iterator<Map<String, String>> iter;
 
     public FPDB_Reply(JSONObject jobj) throws FPDB_Error
@@ -28,8 +27,6 @@ class FPDB_Reply implements Iterable<Map<String, String>>
         if (type == null) {
             throw new FPDB_Error("Reply has no type attribute");
         }
-
-        error = (Integer)jobj.get("error");
 
         JSONArray jarray = (JSONArray)jobj.get("payload");
         if (type == null) {
@@ -85,10 +82,17 @@ class FPDB_Cli
     public static void main(String[] args)
     {
         FPDB_Reply reply = null;
+
+        if (args.length != 1) {
+            System.out.println("Usage: FPDB_Cli url");
+            System.exit(-1);
+        }
+
         try {
-            reply = FPDB_Api.request("inventory.json");
+            reply = FPDB_Api.request(args[0]);
         } catch (FPDB_Error e) {
             System.out.println(e);
+            System.exit(-1);
         }
 
         System.out.println(reply.type);

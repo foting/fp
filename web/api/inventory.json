@@ -1,6 +1,5 @@
 {
     "type"    : "invetory",
-    "error"   : 0,
     "payload" : [
         {
             "beer_id" : "1234",
