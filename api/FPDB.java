@@ -2,12 +2,39 @@ import java.util.*;
 import java.io.*; 
 import org.json.simple.*;
 
+class ErrorCodes {
+    public static final int ERROR_USERNAME = 1;
+    public static final int ERROR_PASSWORD = 2;
+    public static final int ERROR_CRED     = 3;
+    public static final int ERROR_SESSION  = 4;
+    public static final int ERROR_TIMEOUT  = 5;
+    public static final int ERROR_DATABASE = 6;
+    public static final int ERROR_ACTION   = 7;
+
+    public static final int ERROR_CLIENT   = 100;
+}
 
 class FPDBException extends Exception
 {
-    public FPDBException(String m)
+    public int code;
+    public String msg;
+
+    public FPDBException(int code, String msg)
     {
-        super(m);
+        this.code = code;
+        this.msg = msg;
+    }
+
+    public FPDBException(String msg)
+    {
+        System.out.println(msg);
+        this.code = ErrorCodes.ERROR_CLIENT;
+        this.msg = msg;
+    }
+
+    public String getMessage()
+    {
+        return "Error: " + code + ": " + msg;
     }
 }
 
@@ -38,7 +65,7 @@ class FPDBReply implements Iterable<Map<String, String>>
 
 class FPDB
 {
-    public static JSONObject http_get(String url) throws FPDBException
+    private static JSONObject http_get(String url) throws FPDBException
     {
         String jstr = "";
         JSONObject jobj;
@@ -71,7 +98,8 @@ class FPDB
     {
         FPDBReply reply = new FPDBReply(http_get(url));
         if (reply.type.equals("error")) {
-           throw new FPDBException(reply.payload.get(0).get("error"));
+           throw new FPDBException(Integer.valueOf(reply.payload.get(0).get("code")),
+                                   reply.payload.get(0).get("message"));
         }
         return reply;
     }

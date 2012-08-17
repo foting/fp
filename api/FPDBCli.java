@@ -14,7 +14,7 @@ class FPDBCli
         try {
             reply = FPDB.request(args[0]);
         } catch (FPDBException e) {
-            System.out.println(e);
+            System.out.println(e.getMessage());
             System.exit(-1);
         }
 

@@ -2,7 +2,8 @@
     "type"    : "error",
     "payload" : [
         {
-            "error" : "Error"
+            "code" : "0",
+            "message" : "foo bar",
         }
     ]
 }
