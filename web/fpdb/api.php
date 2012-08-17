@@ -32,6 +32,24 @@
             $this->type = $type;
             $this->payload = $payload;
         }
+
+        public function encode()
+        {
+            if (function_exists(json_encode)) {
+                return json_encode($this);
+            } else {
+                $json = "{\"type\" : \"$this->type\", \"payload\" : [";
+                foreach ($this->payload as $record) {
+                    $json .= "{";
+                    foreach ($record as $key => $val) {
+                        $json .= "\"$key\" : \"$val\",";
+                    }
+                    $json .= "},";
+                }
+                $json .= "]}";
+                return $json;
+            }
+        }
     }
 
     function debug_output($msg, $var)
@@ -52,8 +70,7 @@
         global $error_strings;
 
         $jres = new API_Reply("error", array("code" => $code, "message" => $error_strings[$code]));
-        //echo json_encode($jres);
-        print_r($jres);
+        echo $jres->encode();
         exit(-1);
     }
 
@@ -87,8 +104,7 @@
         }
 
         $jres = new API_Reply("login");
-        //echo json_encode($jres);
-        print_r($jres);
+        echo $jres->encode();
     }
 
     function api_inventory_get($db)
@@ -96,9 +112,7 @@
         check_credentials(CRED_ADMIN);
         $qres = $db->inventory_get_all()->get_array();
         $jres = new API_Reply("inventory_get", $qres);
-        //echo json_encode($jres);
-        print_r($jres);
-
+        echo $jres->encode();
     }
 
     function api_iou_get($db)
@@ -107,8 +121,7 @@
         $user_id = $_SESSION["user_id"];
         $qres = $db->iou_get($user_id)->get_array();
         $jres = new API_Reply("iou_get", $qres);
-        //echo json_encode($jres);
-        print_r($jres);
+        echo $jres->encode();
     }
 
     function api_iou_get_all($db)
@@ -116,8 +129,7 @@
         check_credentials(CRED_ADMIN);
         $qres = $db->iou_get_all()->get_array();
         $jres = new API_Reply("iou_get_all", $qres);
-        //echo json_encode($jres);
-        print_r($jres);
+        echo $jres->encode();
     }
 
     if (!session_start()) {
@@ -125,9 +137,7 @@
     }
 
     $action = $_GET["action"];
-
     debug_output("action", $action);
-    debug_output("error_strings", $error_strings);
 
     if ($action != "login" and !isset($_SESSION["active"])) {
         return_error(ERROR_TIMEOUT);
