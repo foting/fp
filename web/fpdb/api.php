@@ -9,7 +9,7 @@
         public $type;
         public $payload;
         
-        function __construct($type, $payload)
+        function __construct($type, $payload = array())
         {
             $this->type = $type;
             $this->payload = $payload;
@@ -59,17 +59,14 @@
         }
 
         if ($qres["password"] == md5($password)) {
-            $key = 1234;
-
             $_SESSION["active"] = True;
             $_SESSION["user_id"] = $qres["user_id"];
             $_SESSION["credentials"] = $qres["credentials"];
-            $_SESSION["key"] = $key;
         } else {
             return_error("Login failed");
         }
 
-        $jres = new API_Reply("login", array("key" => $key));
+        $jres = new API_Reply("login");
         //echo json_encode($jres);
         print_r($jres);
     }
@@ -108,17 +105,11 @@
     }
 
     $action = $_GET["action"];
-    $key = $_GET["key"];
 
     debug_output("action", $action);
-    debug_output("key", $key);
 
     if ($action != "login" and !isset($_SESSION["active"])) {
         return_error("Session timed out");
-    }
-
-    if ($action != "login" and $_SESSION["key"] != $key) {
-        return_error("Session key missmatch");
     }
 
     try {
