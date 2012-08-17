@@ -1,6 +1,8 @@
 <?php
-    include_once "../common/fpdb.php";
+    include_once "../fpdb/fpdb.php";
     include_once "../include/credentials.php";
+
+    define("DEBUG", True);
 
     class API_Reply
     {
@@ -11,6 +13,19 @@
         {
             $this->type = $type;
             $this->payload = $payload;
+        }
+    }
+
+    function debug_output($msg, $var)
+    {
+        if (DEBUG) {
+            echo "$msg: ";
+            if ($var) {
+                print_r($var);
+            } else {
+                echo "empty";
+            }
+            echo "</br>";
         }
     }
 
@@ -44,13 +59,19 @@
         }
 
         if ($qres["password"] == md5($password)) {
+            $key = 1234;
+
             $_SESSION["active"] = True;
             $_SESSION["user_id"] = $qres["user_id"];
             $_SESSION["credentials"] = $qres["credentials"];
-            $_SESSION["key"] = 1234;
+            $_SESSION["key"] = $key;
         } else {
             return_error("Login failed");
         }
+
+        $jres = new API_Reply("login", array("key" => $key));
+        //echo json_encode($jres);
+        print_r($jres);
     }
 
     function api_inventory_get($db)
@@ -88,6 +109,9 @@
 
     $action = $_GET["action"];
     $key = $_GET["key"];
+
+    debug_output("action", $action);
+    debug_output("key", $key);
 
     if ($action != "login" and !isset($_SESSION["active"])) {
         return_error("Session timed out");
