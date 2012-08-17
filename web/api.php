@@ -2,8 +2,6 @@
     include_once "../common/fpdb.php";
     include_once "../include/credentials.php";
 
-    define("API_ERROR_OK", 0);
-
     class API_Reply
     {
         public $type;
@@ -39,9 +37,6 @@
         $username = $_GET["username"];
         $password = $_GET["password"];
  
-        echo $username;
-        echo $password;
-
         $qres = $db->user_get($username)->next();
 
         if (!$qres) {
@@ -94,15 +89,9 @@
     $action = $_GET["action"];
     $key = $_GET["key"];
 
-    echo "\$action: $action</br>";
-    echo "\$key: $key </br>";
-
     if ($action != "login" and !isset($_SESSION["active"])) {
         return_error("Session timed out");
     }
-
-    print_r($_SESSION); echo "</br>";
-
 
     if ($action != "login" and $_SESSION["key"] != $key) {
         return_error("Session key missmatch");
