@@ -1,0 +1,8 @@
+{
+    "type"    : "login",
+    "payload" : [
+        {
+            "session_key" : "1234"
+        }
+    ]
+}

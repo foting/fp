@@ -4,7 +4,7 @@
     $username = htmlspecialchars($_POST["username"]);
     $password = htmlspecialchars($_POST["password"]);
 
-    include_once "../common/fpdb.php";
+    include_once "../fpdb/fpdb.php";
     try {
         $db = new FPDB_User();
         $qres = $db->user_get($username)->next();
