@@ -3,6 +3,24 @@
     include_once "../include/credentials.php";
 
     define("DEBUG", True);
+    
+    define("ERROR_USERNAME", 1);
+    define("ERROR_PASSWORD", 2);
+    define("ERROR_CRED",     3);
+    define("ERROR_SESSION",  4);
+    define("ERROR_TIMEOUT",  5);
+    define("ERROR_DATABASE", 6);
+    define("ERROR_ACTION",   7);
+
+    $error_strings = array(
+            ERROR_USERNAME => "Username not found",
+            ERROR_PASSWORD => "Wrong password (your fucked)",
+            ERROR_CRED     => "Not enough credentails",
+            ERROR_SESSION  => "Failed to start session",
+            ERROR_TIMEOUT  => "Session timed out",
+            ERROR_DATABASE => "Database error",
+            ERROR_ACTION   => "Unknown action requested",
+    );
 
     class API_Reply
     {
@@ -29,9 +47,11 @@
         }
     }
 
-    function return_error($msg)
+    function return_error($code)
     {
-        $jres = new API_Reply("error", array("error" => $msg));
+        global $error_strings;
+
+        $jres = new API_Reply("error", array("code" => $code, "message" => $error_strings[$code]));
         //echo json_encode($jres);
         print_r($jres);
         exit(-1);
@@ -40,7 +60,7 @@
     function check_credentials($cred)
     {
         if ($_SESSION["credentials"] > $cred) {
-            return_error("Not enough credentails");
+            return_error(ERROR_CRED);
         }
     }
 
@@ -55,7 +75,7 @@
         $qres = $db->user_get($username)->next();
 
         if (!$qres) {
-            return_error("User name not found");
+            return_error(ERROR_USERNAME);
         }
 
         if ($qres["password"] == md5($password)) {
@@ -63,7 +83,7 @@
             $_SESSION["user_id"] = $qres["user_id"];
             $_SESSION["credentials"] = $qres["credentials"];
         } else {
-            return_error("Login failed");
+            return_error(ERROR_PASSWORD);
         }
 
         $jres = new API_Reply("login");
@@ -101,15 +121,16 @@
     }
 
     if (!session_start()) {
-        return_error("Failed to start session");
+        return_error(ERROR_SESSION);
     }
 
     $action = $_GET["action"];
 
     debug_output("action", $action);
+    debug_output("error_strings", $error_strings);
 
     if ($action != "login" and !isset($_SESSION["active"])) {
-        return_error("Session timed out");
+        return_error(ERROR_TIMEOUT);
     }
 
     try {
@@ -120,7 +141,7 @@
             $db = new FPDB_Admin();
         }
     } catch (FPDB_Exception $e) {
-        return_error("Faild to connect to database");
+        return_error(ERROR_DATABASE);
     }
 
     try {
@@ -138,10 +159,10 @@
                 api_iou_get_all($db);
                 break;
             default:
-                return_error("Unknown action requested");
+                return_error(ERROR_ACTION);
                 break;
         }
     } catch (FPDB_Exception $e) {
-        return_error("Database query failed");
+        return_error(ERROR_DATABASE);
     }
 ?>
