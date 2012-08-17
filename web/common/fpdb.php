@@ -225,8 +225,8 @@
             		ON beers_bought.beer_id = beers_sold.beer_id
             		WHERE beers_sold.timestamp > beers_bought.timestamp
             		ORDER BY beers_bought.timestamp DESC
-                ) AS T WHERE T.user_id = 2
-        		GROUP BY T.transaction_id ORDER BY T.timestamp) AS Purchases
+                ) AS T WHERE T.user_id = %s
+        		GROUP BY T.transaction_id ORDER BY T.timestamp DESC) AS Purchases
     		ON Purchases.beer_id = sbl_beer.nr";
 	            
         protected $purchase_history_all_q = "

@@ -20,11 +20,12 @@
         $beer_name = $inventory_item["namn"];
         $beer_id = $inventory_item["beer_id"];
         $beer_price = $inventory_item["price"];
+        $beer_count = $inventory_item["count"];
 
-        printf("<input type=\"radio\" name=\"beer_id\" value=%d> %s, %d kr</br>", 
-            $beer_id, $beer_name, $beer_price);
+        printf("<input id=\"$beer_id\" type=\"radio\" name=\"beer_id\" value=%d><label for=\"$beer_id\"> %s, %d kr (%d kvar)</label></br>", 
+            $beer_id, $beer_name, $beer_price, $beer_count);
     }
-    printf("<input type=\"submit\" name=\"submit\" value=\"Register\"/>");
+    printf("<input class=\"login\" type=\"submit\" name=\"submit\" value=\"BUY!\"/>");
     printf("</form>");
 
 

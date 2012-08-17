@@ -23,16 +23,17 @@
         if ($credentials != CRED_ADMIN) {
             die("BUG: Non-admin user is accessing admin area");
         }
-    
-        echo "<h1>FridayPub Admin's Area</h1>";
-        echo "Logged in as: <b>${_SESSION["username"]}</b>";
     ?>
-    <a href="../common/logout.php">(logout)</a> <br>
-    <a href="../admin/inventory.php">INVENTORY</a>
-    <a href="../admin/iou.php">IOU</a>
-    <a href="../admin/reg_beers.php">REGISTER BEERS</a>
-    <a href="../admin/payment.php">REGISTER PAYMENT</a>
-    <a href="../admin/purchase.php">REGISTER PURCHASE</a>
-    <a href="../admin/add_user.php">ADD USER</a>
-    <hr>
+        <h1>FridayPub Admin</h1>
+        <div class="logout">Logged in as:
+            <?php echo $_SESSION["username"]; ?>
+        	<a href="../common/logout.php">(logout)</a>
+        </div>
+        <ul class="menu">
+            <li><a href="../admin/inventory.php">INVENTORY</a></li>
+            <li><a href="../admin/iou.php">BANK</a></li>
+            <li><a href="../admin/payment.php">U PAY UP</a></li>
+            <li><a href="../admin/purchase.php">U BUY</a></li>
+            <li><a href="../admin/add_user.php">ADD U</a></li>
+		</ul>
 

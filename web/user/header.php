@@ -13,16 +13,16 @@
     	<link rel="stylesheet" href="../css/friday_pub.css">
     	<link href='http://fonts.googleapis.com/css?family=Fredoka+One' rel='stylesheet' type='text/css'>
 	
-        <title>FridayPub Admin's Area</title>
+        <title>FridayPub</title>
     </head>
     <body>
-    <?php 
-        echo "FridayPub User's Area<br>";
-        echo "Logged in as: <b>${_SESSION["username"]}</b> ";
-    ?>
-
-<a href="../common/logout.php">(logout)</a> <br>
-<a href="../user/buy_beer.php">BUY BEER</a>
-<a href="../user/iou.php">IOU</a>
-<a href="../user/history.php">HISTORY</a>
-<hr>
+    	<h1>FridayPub</h1>
+        <div class="logout">Logged in as:
+            <?php echo $_SESSION["username"]; ?>
+        	<a href="../common/logout.php">(logout)</a>
+        </div>
+        <ul class="menu">
+            <li><a href="../user/buy_beer.php">BUY BEER</a></li>
+            <li><a href="../user/iou.php">BANK</a></li>
+        </ul>
+        <div class="clearfix"></div>

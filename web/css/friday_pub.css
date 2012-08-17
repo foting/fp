@@ -175,6 +175,7 @@ body {
 	color: #227596;
 	background: #90ecff;
 	margin-left:1em;
+	width:32em;
 }
 
 h1 {
@@ -184,11 +185,19 @@ h1 {
 	font-weight: 400;
 }
 
+h2 {
+	font-weight:400;
+	font-size: 1.5em;
+	color: #f092a5;
+	margin-top:1em;
+}
+
 hr {
 	color: #227596;
 	background-color: #227596;
 	height:4px;
 }
+
 form {
 	margin-top:1em;
 }
@@ -207,23 +216,51 @@ input {
 	border-radius: 10px;
 }
 
+radio {
+	height:30px;
+	width:30px;
+	background-image:("images/radio.png");
+}
+
+table {
+	width:100%;
+	}
+
 th, td {
 	padding:0.2em;
 	border-top: 3px dotted #227596;
 	vertical-align: middle;
 }
 
+td.right {
+	text-align:right;
+	}
+	
 th {
 	font-weight:400;
 	font-size:0.8em;
 	color: #f092a5;
+	text-align:left;
+}
+
+.assets {
+	float:left;
+	border:10px dotted #227596;
+	border-radius: 30px;
+	padding:0.7em 1em 1em 1em;
+	margin:2em 0 1em 0;	
+}
+.tablewrapper {
+	float:left;
+	width:100%;
 }
 
 .face {
-	float:right;
-	margin-right:2em;
+	float:left;
+	width:14em;
+	margin-left:1em;
 }
-.login {
+.login, .menu a {
 	color: #FFF;
 	padding: 0.2em 1em;
 	background:	#f092a5;
@@ -242,7 +279,21 @@ th {
 		inset 0px 0px 1px rgba(255,255,255,0.6);
 }
 
-	
+.logout {
+	position:absolute;
+	right:0.5em;
+	top:0.5em;
+}
+
+.menu li {
+	display:block;
+	float:left;
+	margin:0 1em 1em 0;
+}
+
+.menu a {
+	text-decoration:none;
+}
 .strike {
 	text-decoration:line-through;
 }

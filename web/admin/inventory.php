@@ -34,6 +34,10 @@
     ?>
 
 </table>
+<br>
+<ul class="menu">
+<li><a href="../admin/reg_beers.php">REGISTER BEERS</a></li>
+</ul>
 <?php 
     include_once "footer.php"; 
 ?>
