@@ -1,6 +1,6 @@
 <?php
     include_once "../admin/header.php";
-    include_once "../common/fpdb.php";
+    include_once "../fpdb/fpdb.php";
 
     try {
         $db = new FPDB_Admin();
