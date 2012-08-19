@@ -13,7 +13,7 @@ class FPDBException extends Exception
 }
 
 
-interface FBDPReplyFactory<T>
+interface FPDBReplyFactory<T>
 {  
     T create(Map<String, String> map) throws FPDBException;
 } 
@@ -23,7 +23,7 @@ class FPDBReply<T>
 {
     LinkedList<T> payload;
 
-    public FPDBReply(String jstr, FBDPReplyFactory<T> factory) throws FPDBException
+    public FPDBReply(String jstr, FPDBReplyFactory<T> factory) throws FPDBException
     {
         JSONObject jobj = (JSONObject)JSONValue.parse(jstr);
         if (jobj == null) {
@@ -33,6 +33,10 @@ class FPDBReply<T>
         String type = (String)jobj.get("type");
         if (type == null) {
             throw new FPDBException("JSON no type attribute");
+        }
+
+        if (type.equals("error")) {
+            throw new FPDBException("TODO: Get error message");
         }
 
         List<Map<String, String>> payload_map = (List<Map<String, String>>)jobj.get("payload");
@@ -84,7 +88,7 @@ class _FPDBReplyIOU
 /*
  * Factory classes
  */
-class FPDBReplyInventory_Factory implements FBDPReplyFactory<_FPDBReplyInventory>
+class FPDBReplyInventory_Factory implements FPDBReplyFactory<_FPDBReplyInventory>
 {
     public _FPDBReplyInventory create(Map<String, String> map) throws FPDBException
     {
@@ -92,7 +96,7 @@ class FPDBReplyInventory_Factory implements FBDPReplyFactory<_FPDBReplyInventory
     }
 }
 
-class FPDBReplyIOU_Factory implements FBDPReplyFactory<_FPDBReplyIOU>
+class FPDBReplyIOU_Factory implements FPDBReplyFactory<_FPDBReplyIOU>
 {
     public _FPDBReplyIOU create(Map<String, String> map) throws FPDBException
     {
