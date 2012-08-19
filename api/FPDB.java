@@ -13,15 +13,9 @@ class FPDBException extends Exception
 }
 
 
-interface FPDBReplyFactory<T>
-{  
-    T create(Map<String, String> map) throws FPDBException;
-} 
-
-
 class FPDBReply<T>
 {
-    LinkedList<T> payload;
+    public LinkedList<T> payload;
 
     public FPDBReply(String jstr, FPDBReplyFactory<T> factory) throws FPDBException
     {
@@ -88,6 +82,12 @@ class _FPDBReplyIOU
 /*
  * Factory classes
  */
+
+interface FPDBReplyFactory<T>
+{  
+    T create(Map<String, String> map) throws FPDBException;
+} 
+
 class FPDBReplyInventory_Factory implements FPDBReplyFactory<_FPDBReplyInventory>
 {
     public _FPDBReplyInventory create(Map<String, String> map) throws FPDBException
@@ -107,6 +107,7 @@ class FPDBReplyIOU_Factory implements FPDBReplyFactory<_FPDBReplyIOU>
 /*
  * Essentially typedefs
  */
+
 class FPDBReplyInventory extends FPDBReply<_FPDBReplyInventory>
 {
     public FPDBReplyInventory(String jstr) throws FPDBException
