@@ -1,9 +1,0 @@
-{
-    "type"    : "error",
-    "payload" : [
-        {
-            "code" : "0",
-            "message" : "foo bar",
-        }
-    ]
-}
