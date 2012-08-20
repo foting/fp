@@ -3,18 +3,18 @@ package se.uu.it.android.fridaypub;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+
 import java.net.URL;
 import java.net.URLConnection;
+
 import java.util.LinkedList;
+import java.util.Iterator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-/*
-import android.util.Log;
-*/
 
 @SuppressWarnings("serial")
 class FPDBException extends Exception
@@ -32,23 +32,25 @@ interface FPDBReplyFactory<T>
 } 
 
 
-class FPDBReply<T>
+class FPDBReply<T> implements Iterable<T>
 {
     public LinkedList<T> payload;
 
-    public FPDBReply(String jstr, FPDBReplyFactory<T> factory) throws FPDBException, JSONException
+    public FPDBReply(String jstr, FPDBReplyFactory<T> factory) throws FPDBException
     {
-    	JSONObject jobj = (JSONObject) new JSONTokener(jstr).nextValue();
-    	JSONArray jarr = jobj.getJSONArray("payload");
-        String type = (String)jobj.get("type");
+        JSONObject jobj;
+        JSONArray jarr;
+        String type;
 
-        /*
-        Log.i("JSON", jobj.toString());
-        Log.i("Type", jobj.getString("type"));
-        Log.i("Payload", jobj.get("payload").toString());
-        Log.i("Payload_arr", jarr.toString());
-        */
-        
+        try {
+            jobj = new JSONObject(new JSONTokener(jstr));
+
+            jarr = jobj.getJSONArray("payload");
+            type = (String)jobj.get("type");
+        } catch (JSONException e) {
+            throw new FPDBException("JSON Error");
+        }
+
         if (type == null) {
             throw new FPDBException("JSON no type attribute");
         }
@@ -62,9 +64,19 @@ class FPDBReply<T>
         }
 
         payload = new LinkedList<T>();
-        for (int i = 0; i < jarr.length(); i++) {
-            payload.add(factory.create(jarr.getJSONObject(i)));
+        try {
+            for (int i = 0; i < jarr.length(); i++) {
+                payload.add(factory.create(jarr.getJSONObject(i)));
+            }
+        } catch (JSONException e) {
+            throw new FPDBException("JSON Error");
+
         }
+    }
+
+    public Iterator<T> iterator()
+    {
+        return payload.iterator();
     }
 }
 
@@ -104,12 +116,10 @@ class FPDBReplyIOU
 
     public FPDBReplyIOU(JSONObject jobj) throws JSONException
     {
-        String assets_str;	// XXX Fulkod fšr test
         username = jobj.getString("username");
         first_name = jobj.getString("first_name");
         last_name = jobj.getString("last_name");
-        assets_str = jobj.getString("assets");	// XXX Fulkod fšr test
-        assets = Float.parseFloat(assets_str);
+        assets = Float.parseFloat(jobj.getString("assets"));
     }
 }
 
