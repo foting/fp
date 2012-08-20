@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<project name="FPDB" default="compile">
+
+    <path id="ext_lib-classpath">
+        <fileset dir="../ext_lib/">
+            <include name="*.jar"/>
+        </fileset>
+
+        <pathelement path="${build.dir}"/>
+    </path>
+
+    <target name="clean" description="remove intermediate files">
+        <delete dir="classes"/>
+    </target>
+
+    <target name="clobber" depends="clean" description="remove all artifact files">
+        <delete file="fpdb.jar"/>
+    </target>
+
+    <target name="compile" description="compile the Java source code to class files">
+        <mkdir dir="classes"/>
+        <javac srcdir="." destdir="classes">
+            <classpath refid="ext_lib-classpath"/>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile" description="create a Jar file for the application">
+        <jar destfile="fpdb.jar">
+            <fileset dir="classes" includes="**/*.class"/>
+        </jar>
+    </target>
+</project>
