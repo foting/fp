@@ -10,7 +10,8 @@
         die($e->getMessage());
     }
 
-    extract($iou);
+    $assets = isset($iou["assets"]) ? $iou["assets"] : 0;
+
     if ($assets >= 0) {
         printf("<div class=\"assets\"><h1>I'm good!</h1>");
         printf("Many money in the bank:");
@@ -38,7 +39,7 @@
     foreach ($qres as $purchase) {
         printf("<tr><th>%s</th><td>%s (%d)</td><td class=\"right\">%d kr</td></tr>",
             $purchase["timestamp"], $purchase["namn"], $purchase["beer_id"], $purchase["price"]);
-    }
+    }  
     printf("</table>");
     
     /* List payments */
