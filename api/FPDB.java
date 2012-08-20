@@ -1,4 +1,4 @@
-package se.uu.it.android.fridaypub;
+package se.uu.it.fridaypub;
 
 import java.io.BufferedReader;
 import java.io.IOException;

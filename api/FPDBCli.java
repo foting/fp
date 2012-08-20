@@ -1,4 +1,4 @@
-package se.uu.it.android.fridaypub;
+package se.uu.it.fridaypub;
 
 class FPDBCli
 {
