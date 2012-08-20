@@ -10,7 +10,7 @@ class FPDBCli
         String username = "gurra";
         String password = "gurra";
 
-        FPDBReplyIOU reply = null;
+        FPDBReply<FPDBReplyIOU> reply = null;
         try {
             FPDB db = new FPDB(url, username, password);
             reply = db.iou_get_all();
@@ -19,11 +19,11 @@ class FPDBCli
         }
 
         Log.i("IOU - ", "IOU");
-        for (_FPDBReplyIOU i : reply.payload) {
+        for (FPDBReplyIOU i : reply.payload) {
         	Log.i("Username: ", i.username);
         	Log.i("First name: ", i.first_name);
         	Log.i("Last name: ", i.last_name);
-        	Log.i("Assets: ", i.assets_str);
+        	Log.i("Assets: ", i.assets);
         }
         return reply;
     }

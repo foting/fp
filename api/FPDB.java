@@ -12,7 +12,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+/*
 import android.util.Log;
+*/
 
 @SuppressWarnings("serial")
 class FPDBException extends Exception
@@ -24,6 +26,12 @@ class FPDBException extends Exception
 }
 
 
+interface FPDBReplyFactory<T>
+{  
+    T create(JSONObject jobj) throws FPDBException, JSONException;
+} 
+
+
 class FPDBReply<T>
 {
     public LinkedList<T> payload;
@@ -33,10 +41,13 @@ class FPDBReply<T>
     	JSONObject jobj = (JSONObject) new JSONTokener(jstr).nextValue();
     	JSONArray jarr = jobj.getJSONArray("payload");
         String type = (String)jobj.get("type");
+
+        /*
         Log.i("JSON", jobj.toString());
         Log.i("Type", jobj.getString("type"));
         Log.i("Payload", jobj.get("payload").toString());
         Log.i("Payload_arr", jarr.toString());
+        */
         
         if (type == null) {
             throw new FPDBException("JSON no type attribute");
@@ -51,39 +62,21 @@ class FPDBReply<T>
         }
 
         payload = new LinkedList<T>();
-        for (int i=0; i < jarr.length(); i++) {
+        for (int i = 0; i < jarr.length(); i++) {
             payload.add(factory.create(jarr.getJSONObject(i)));
         }
     }
 }
 
-//	{	
-//	"type":"iou_get_all",
-//	"payload":
-//	 [
-//     {
-//		"username":"test",
-//		"first_name":"test",
-//		"last_name":"test",
-//		"assets":"-451.00"
-//     }
-//     ,
-//     {
-//	    "username":"gurra",
-//	    "first_name":"David",
-//	    "last_name":"Eklov","assets":"-120.00"
-//	   }
-//   ]
-//	}
 
-class _FPDBReplyInventory
+class FPDBReplyInventory
 {
     public String name;
     public int    beer_id;
     public int    count;
     public float  price;
 
-    public _FPDBReplyInventory(JSONObject jobj) throws FPDBException, JSONException
+    public FPDBReplyInventory(JSONObject jobj) throws JSONException
     {
         name = jobj.getString("name");
         beer_id = Integer.parseInt(jobj.getString("beer_id"));
@@ -93,16 +86,25 @@ class _FPDBReplyInventory
 
 }
 
-class _FPDBReplyIOU
+class FPDBReplyInventory_Factory implements FPDBReplyFactory<FPDBReplyInventory>
+{
+    public FPDBReplyInventory create(JSONObject jobj) throws JSONException
+    {
+        return new FPDBReplyInventory(jobj);
+    }
+}
+
+
+class FPDBReplyIOU
 {
     public String username;
     public String first_name;
     public String last_name;
-    public String assets_str;	// XXX Fulkod fšr test
     public float  assets;
 
-    public _FPDBReplyIOU(JSONObject jobj) throws FPDBException, JSONException
+    public FPDBReplyIOU(JSONObject jobj) throws JSONException
     {
+        String assets_str;	// XXX Fulkod fšr test
         username = jobj.getString("username");
         first_name = jobj.getString("first_name");
         last_name = jobj.getString("last_name");
@@ -111,51 +113,13 @@ class _FPDBReplyIOU
     }
 }
 
-/*
- * Factory classes
- */
-
-interface FPDBReplyFactory<T>
-{  
-    T create(JSONObject jobj) throws FPDBException, JSONException;
-} 
-
-class FPDBReplyInventory_Factory implements FPDBReplyFactory<_FPDBReplyInventory>
+class FPDBReplyIOU_Factory implements FPDBReplyFactory<FPDBReplyIOU>
 {
-    public _FPDBReplyInventory create(JSONObject jobj) throws FPDBException, JSONException
+    public FPDBReplyIOU create(JSONObject jobj) throws JSONException
     {
-        return new _FPDBReplyInventory(jobj);
+        return new FPDBReplyIOU(jobj);
     }
 }
-
-class FPDBReplyIOU_Factory implements FPDBReplyFactory<_FPDBReplyIOU>
-{
-    public _FPDBReplyIOU create(JSONObject jobj) throws FPDBException, JSONException
-    {
-        return new _FPDBReplyIOU(jobj);
-    }
-}
-
-/*
- * Essentially typedefs
- */
-
-class FPDBReplyInventory extends FPDBReply<_FPDBReplyInventory>
-{
-    public FPDBReplyInventory(String jstr) throws FPDBException, JSONException
-    {
-        super(jstr, new FPDBReplyInventory_Factory());
-    }
-}
-
-class FPDBReplyIOU extends FPDBReply<_FPDBReplyIOU>
-{
-    public FPDBReplyIOU(String jstr) throws FPDBException, JSONException
-    {
-        super(jstr, new FPDBReplyIOU_Factory());
-    }
-}
-
 
 
 class FPDB
@@ -185,22 +149,22 @@ class FPDB
         return jstr;
     }
 
-    public FPDBReplyInventory inventory_get() throws FPDBException, IOException, JSONException
+    public FPDBReply<FPDBReplyInventory> inventory_get() throws FPDBException, IOException, JSONException
     {
         String jstr = http_get_json(url + "&action=inventory_get");
-        return new FPDBReplyInventory(jstr);
+        return new FPDBReply<FPDBReplyInventory>(jstr, new FPDBReplyInventory_Factory());
     }
 
-    public FPDBReplyIOU iou_get() throws FPDBException, IOException, JSONException
+    public FPDBReply<FPDBReplyIOU> iou_get() throws FPDBException, IOException, JSONException
     {
         String jstr = http_get_json(url + "&action=iou_get");
-        return new FPDBReplyIOU(jstr);
+        return new FPDBReply<FPDBReplyIOU>(jstr, new FPDBReplyIOU_Factory());
     }
 
-    public FPDBReplyIOU iou_get_all() throws FPDBException, IOException, JSONException
+    public FPDBReply<FPDBReplyIOU> iou_get_all() throws FPDBException, IOException, JSONException
     {
         String jstr = http_get_json(url + "&action=iou_get_all");
-        return new FPDBReplyIOU(jstr);
+        return new FPDBReply<FPDBReplyIOU>(jstr, new FPDBReplyIOU_Factory());
     }
 }
 
