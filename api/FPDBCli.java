@@ -1,10 +1,12 @@
-import java.util.*;
+package se.uu.it.android.fridaypub;
+
+import android.util.Log;
 
 class FPDBCli
 {
-    public static void main(String[] args)
+    public static FPDBReplyIOU connect()
     {
-        String url = "http://user.it.uu.se/~deklov/fpdb/api.php";
+        String url = "http://interact.it.uu.se/hci-dev/fp/fpdb/api.php";
         String username = "gurra";
         String password = "gurra";
 
@@ -13,16 +15,16 @@ class FPDBCli
             FPDB db = new FPDB(url, username, password);
             reply = db.iou_get_all();
         } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.exit(-1);
+            Log.i("Error", e.getMessage());
         }
 
-        System.out.println("IOU");
+        Log.i("IOU - ", "IOU");
         for (_FPDBReplyIOU i : reply.payload) {
-            System.out.println("username: " + i.username);
-            System.out.println("first_name: " + i.first_name);
-            System.out.println("last_name: " + i.last_name);
-            System.out.println("assets: " + i.assets);
+        	Log.i("Username: ", i.username);
+        	Log.i("First name: ", i.first_name);
+        	Log.i("Last name: ", i.last_name);
+        	Log.i("Assets: ", i.assets_str);
         }
+        return reply;
     }
 }

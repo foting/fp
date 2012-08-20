@@ -5,7 +5,7 @@
     /* Not all server at uni supports mysqli hence these wrappers */
     function sql_connect($server, $username, $password, $database)
     {
-        if (function_exists(mysqli_connect)) {
+        if (function_exists("mysqli_connect")) {
             return  mysqli_connect($server, $username, $password, $database);
         } else {
             $link = mysql_connect($server, $username, $password);
@@ -18,7 +18,7 @@
 
     function sql_close($link)
     {
-        if (function_exists(mysqli_error)) {
+        if (function_exists("mysqli_error")) {
             return mysqli_close($link);
         } else {
             return mysql_close();
@@ -27,7 +27,7 @@
 
     function sql_error($link)
     {
-        if (function_exists(mysqli_error)) {
+        if (function_exists("mysqli_error")) {
             return mysqli_error($link);
         } else {
             return mysql_error();
@@ -36,7 +36,7 @@
 
     function sql_query($link, $query)
     {
-        if (function_exists(mysqli_query)) {
+        if (function_exists("mysqli_query")) {
             return mysqli_query($link, $query);
         } else {
             return mysql_query($query);
@@ -45,7 +45,7 @@
 
     function sql_fetch_assoc($results)
     {
-        if (function_exists(mysqli_fetch_assoc)) {
+        if (function_exists("mysqli_fetch_assoc")) {
             return mysqli_fetch_assoc($results);
         } else {
             return mysql_fetch_assoc($results);

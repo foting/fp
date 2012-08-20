@@ -1,9 +1,20 @@
-import java.util.*;
-import java.io.*; 
-import java.net.*;
-import org.json.simple.*;
+package se.uu.it.android.fridaypub;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+import java.util.LinkedList;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+
+import android.util.Log;
+
+@SuppressWarnings("serial")
 class FPDBException extends Exception
 {
     public FPDBException(String msg)
@@ -17,14 +28,16 @@ class FPDBReply<T>
 {
     public LinkedList<T> payload;
 
-    public FPDBReply(String jstr, FPDBReplyFactory<T> factory) throws FPDBException
+    public FPDBReply(String jstr, FPDBReplyFactory<T> factory) throws FPDBException, JSONException
     {
-        JSONObject jobj = (JSONObject)JSONValue.parse(jstr);
-        if (jobj == null) {
-            throw new FPDBException("JSON Parser error");
-        }
-
+    	JSONObject jobj = (JSONObject) new JSONTokener(jstr).nextValue();
+    	JSONArray jarr = jobj.getJSONArray("payload");
         String type = (String)jobj.get("type");
+        Log.i("JSON", jobj.toString());
+        Log.i("Type", jobj.getString("type"));
+        Log.i("Payload", jobj.get("payload").toString());
+        Log.i("Payload_arr", jarr.toString());
+        
         if (type == null) {
             throw new FPDBException("JSON no type attribute");
         }
@@ -32,19 +45,36 @@ class FPDBReply<T>
         if (type.equals("error")) {
             throw new FPDBException("TODO: Get error message");
         }
-
-        List<Map<String, String>> payload_map = (List<Map<String, String>>)jobj.get("payload");
-        if (payload_map == null) {
+        
+        if (jobj.isNull("payload")) {
             throw new FPDBException("JSON no payload attribute");
         }
 
         payload = new LinkedList<T>();
-        for (Map<String, String> i : payload_map) {
-            payload.add(factory.create(i));
+        for (int i=0; i < jarr.length(); i++) {
+            payload.add(factory.create(jarr.getJSONObject(i)));
         }
     }
 }
 
+//	{	
+//	"type":"iou_get_all",
+//	"payload":
+//	 [
+//     {
+//		"username":"test",
+//		"first_name":"test",
+//		"last_name":"test",
+//		"assets":"-451.00"
+//     }
+//     ,
+//     {
+//	    "username":"gurra",
+//	    "first_name":"David",
+//	    "last_name":"Eklov","assets":"-120.00"
+//	   }
+//   ]
+//	}
 
 class _FPDBReplyInventory
 {
@@ -53,12 +83,12 @@ class _FPDBReplyInventory
     public int    count;
     public float  price;
 
-    public _FPDBReplyInventory(Map<String, String> map) throws FPDBException
+    public _FPDBReplyInventory(JSONObject jobj) throws FPDBException, JSONException
     {
-        name = map.get("name");
-        beer_id = Integer.parseInt(map.get("beer_id"));
-        count = Integer.parseInt(map.get("count"));
-        price = Float.parseFloat(map.get("price"));
+        name = jobj.getString("name");
+        beer_id = Integer.parseInt(jobj.getString("beer_id"));
+        count = Integer.parseInt(jobj.getString("count"));
+        price = Float.parseFloat(jobj.getString("price"));
     }
 
 }
@@ -68,14 +98,16 @@ class _FPDBReplyIOU
     public String username;
     public String first_name;
     public String last_name;
+    public String assets_str;	// XXX Fulkod fšr test
     public float  assets;
 
-    public _FPDBReplyIOU(Map<String, String> map) throws FPDBException
+    public _FPDBReplyIOU(JSONObject jobj) throws FPDBException, JSONException
     {
-        username = map.get("username");
-        first_name = map.get("first_name");
-        last_name = map.get("last_name");
-        assets = Float.parseFloat(map.get("assets"));
+        username = jobj.getString("username");
+        first_name = jobj.getString("first_name");
+        last_name = jobj.getString("last_name");
+        assets_str = jobj.getString("assets");	// XXX Fulkod fšr test
+        assets = Float.parseFloat(assets_str);
     }
 }
 
@@ -85,22 +117,22 @@ class _FPDBReplyIOU
 
 interface FPDBReplyFactory<T>
 {  
-    T create(Map<String, String> map) throws FPDBException;
+    T create(JSONObject jobj) throws FPDBException, JSONException;
 } 
 
 class FPDBReplyInventory_Factory implements FPDBReplyFactory<_FPDBReplyInventory>
 {
-    public _FPDBReplyInventory create(Map<String, String> map) throws FPDBException
+    public _FPDBReplyInventory create(JSONObject jobj) throws FPDBException, JSONException
     {
-        return new _FPDBReplyInventory(map);
+        return new _FPDBReplyInventory(jobj);
     }
 }
 
 class FPDBReplyIOU_Factory implements FPDBReplyFactory<_FPDBReplyIOU>
 {
-    public _FPDBReplyIOU create(Map<String, String> map) throws FPDBException
+    public _FPDBReplyIOU create(JSONObject jobj) throws FPDBException, JSONException
     {
-        return new _FPDBReplyIOU(map);
+        return new _FPDBReplyIOU(jobj);
     }
 }
 
@@ -110,7 +142,7 @@ class FPDBReplyIOU_Factory implements FPDBReplyFactory<_FPDBReplyIOU>
 
 class FPDBReplyInventory extends FPDBReply<_FPDBReplyInventory>
 {
-    public FPDBReplyInventory(String jstr) throws FPDBException
+    public FPDBReplyInventory(String jstr) throws FPDBException, JSONException
     {
         super(jstr, new FPDBReplyInventory_Factory());
     }
@@ -118,7 +150,7 @@ class FPDBReplyInventory extends FPDBReply<_FPDBReplyInventory>
 
 class FPDBReplyIOU extends FPDBReply<_FPDBReplyIOU>
 {
-    public FPDBReplyIOU(String jstr) throws FPDBException
+    public FPDBReplyIOU(String jstr) throws FPDBException, JSONException
     {
         super(jstr, new FPDBReplyIOU_Factory());
     }
@@ -136,7 +168,7 @@ class FPDB
     {
         this.username = username;
         this.password = password;
-        this.url = String.format("%s?username=%s&password=%s", url, username, password);
+        this.url = String.format("%s?username=%s&password=%s", url, this.username, this.password);
     }
 
     private String http_get_json(String url) throws IOException
@@ -153,19 +185,19 @@ class FPDB
         return jstr;
     }
 
-    public FPDBReplyInventory inventory_get() throws FPDBException, IOException
+    public FPDBReplyInventory inventory_get() throws FPDBException, IOException, JSONException
     {
         String jstr = http_get_json(url + "&action=inventory_get");
         return new FPDBReplyInventory(jstr);
     }
 
-    public FPDBReplyIOU iou_get() throws FPDBException, IOException
+    public FPDBReplyIOU iou_get() throws FPDBException, IOException, JSONException
     {
         String jstr = http_get_json(url + "&action=iou_get");
         return new FPDBReplyIOU(jstr);
     }
 
-    public FPDBReplyIOU iou_get_all() throws FPDBException, IOException
+    public FPDBReplyIOU iou_get_all() throws FPDBException, IOException, JSONException
     {
         String jstr = http_get_json(url + "&action=iou_get_all");
         return new FPDBReplyIOU(jstr);
