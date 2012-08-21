@@ -67,7 +67,7 @@ class FPDBReplyInventory
 
     public FPDBReplyInventory(JSONObject jobj) throws JSONException
     {
-        name = jobj.getString("name");
+        name = jobj.getString("namn");
         beer_id = Integer.parseInt(jobj.getString("beer_id"));
         count = Integer.parseInt(jobj.getString("count"));
         price = Float.parseFloat(jobj.getString("price"));
@@ -177,7 +177,7 @@ class FPDB
 
     public FPDBReply<FPDBReplyPurchases> purchases_get() throws FPDBException
     {
-        String jstr = http_get_json(url + "&action=iou_get");
+        String jstr = http_get_json(url + "&action=purchase_get");
         return new FPDBReply<FPDBReplyPurchases>(jstr, new FPDBReplyPurchases_Factory());
     }
 
