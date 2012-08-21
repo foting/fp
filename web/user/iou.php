@@ -14,7 +14,7 @@
 
     if ($assets >= 0) {
         printf("<div class=\"assets\"><h1>I'm good!</h1>");
-        printf("Many money in the bank:");
+        printf("Many monies in the bank:");
         printf("<h1>%d kr</h1></div>", $assets);
         printf("<img class=\"face\" src=\"../images/good.png\">");
     }

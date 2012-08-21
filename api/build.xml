@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<project name="FPDB" default="compile">
+
+    <property name="build_dir" value="classes/"/>
+    <property name="ext_lib_dir" value="../ext_lib/"/>
+    <property name="main_class" value="se.uu.it.fridaypub.FPDBCli"/>
+    <property name="jar_file" value="fpdb.jar"/>
+
+    <path id="ext_lib-classpath">
+        <fileset dir="${ext_lib_dir}" includes="**/*.jar"/>
+    </path>
+
+    <target name="clean">
+        <delete dir="${build_dir}"/>
+    </target>
+
+    <target name="clobber" depends="clean">
+        <delete file="${jar_file}"/>
+    </target>
+
+    <target name="compile">
+        <mkdir dir="${build_dir}"/>
+        <javac srcdir="." destdir="${build_dir}" classpathref="ext_lib-classpath"/>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="${jar_file}" basedir="${build_dir}">
+            <manifest>
+                <attribute name="Main-Class" value="${main_class}"/>
+            </manifest>
+        </jar>
+    </target>
+
+    <target name="run" depends="jar">
+        <java fork="true" classname="${main_class}">
+            <classpath>
+                <path refid="ext_lib-classpath"/>
+                <path location="${jar_file}"/>
+            </classpath>
+        </java>
+    </target>
+</project>
