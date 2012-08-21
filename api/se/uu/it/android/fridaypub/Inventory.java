@@ -1,14 +1,11 @@
 package se.uu.it.android.fridaypub;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 
 public class Inventory extends FPDB
 {
-    public Inventory(String url, String userName, String password) throws FPDBException, JSONException, MalformedURLException, IOException {
+    public Inventory(String url, String userName, String password) throws FPDBException {
 		super(url + "?action=inventory_get", userName, password);
 	}
     

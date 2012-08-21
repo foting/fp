@@ -6,8 +6,8 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.ListIterator;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,7 +18,7 @@ import org.json.JSONTokener;
 import android.util.Log;
 */
 
-abstract class FPDB
+abstract class FPDB implements Iterable<FPDB.Reply>
 {
     public LinkedList<Reply> payload;
 
@@ -26,21 +26,44 @@ abstract class FPDB
            
     protected abstract Reply createReply(JSONObject jarr) throws JSONException;
     
-    public FPDB(String url, String username, String password) throws JSONException, MalformedURLException, IOException, FPDBException
+    public FPDB(String url, String username, String password) throws FPDBException
     {
         url = String.format("%s&username=%s&password=%s", url, username, password);
-        URLConnection con = (new URL(url)).openConnection();
-        InputStreamReader sr = new InputStreamReader(con.getInputStream());
+        URLConnection con;
+		try {
+			con = (new URL(url)).openConnection();
+		} catch (MalformedURLException e) {
+			throw new FPDBException(e);
+		} catch (IOException e) {
+			throw new FPDBException(e);
+		}
+        InputStreamReader sr;
+		try {
+			sr = new InputStreamReader(con.getInputStream());
+		} catch (IOException e) {
+			throw new FPDBException(e);
+		}
         BufferedReader br = new BufferedReader(sr);
 
         String line, jstr = "";
-        while ((line = br.readLine()) != null) {
-            jstr += line;
+        try {
+			while ((line = br.readLine()) != null) {
+			    jstr += line;
+			}
+		} catch (IOException e) {
+			throw new FPDBException(e);
+		}
+        
+        JSONObject jobj;
+        JSONArray jarr;
+        String type;
+        try {
+	    	jobj = new JSONObject(new JSONTokener(jstr));
+	    	jarr = jobj.getJSONArray("payload");
+	        type = (String)jobj.get("type");
+        } catch (JSONException e) {
+        	throw new FPDBException(e);
         }
-
-    	JSONObject jobj = (JSONObject) new JSONTokener(jstr).nextValue();
-    	JSONArray jarr = jobj.getJSONArray("payload");
-        String type = (String)jobj.get("type");
 
         /*
         Log.i("JSON", jobj.toString());
@@ -63,11 +86,17 @@ abstract class FPDB
 
         payload = new LinkedList<Reply>();
         for (int i = 0; i < jarr.length(); i++) {
-            payload.add(createReply(jarr.getJSONObject(i)));
+            try {
+				payload.add(createReply(jarr.getJSONObject(i)));
+			} catch (JSONException e) {
+				throw new FPDBException(e);
+			}
         }
-    	ListIterator<Reply> fpitems = payload.listIterator();
-    	while (fpitems.hasNext())
-    		System.out.println(fpitems.next());
+    }
+    public Iterator<Reply> iterator()
+    {
+        return payload.iterator();
+	
     }
 }
 
