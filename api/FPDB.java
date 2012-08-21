@@ -1,19 +1,9 @@
 package se.uu.it.fridaypub;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
-import java.net.URL;
-import java.net.URLConnection;
-
-import java.util.LinkedList;
-import java.util.Iterator;
-
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
+import java.io.*;
+import java.net.*;
+import java.util.*;
+import org.json.*;
 
 
 @SuppressWarnings("serial")
@@ -94,6 +84,31 @@ class FPDBReplyInventory_Factory implements FPDBReplyFactory<FPDBReplyInventory>
 }
 
 
+class FPDBReplyPurchases
+{
+    public int user_id;
+    public int beer_id;
+    public float price;
+    public String timestamp;
+
+    public FPDBReplyPurchases(JSONObject jobj) throws JSONException
+    {
+        user_id = Integer.parseInt(jobj.getString("user_id"));
+        beer_id = Integer.parseInt(jobj.getString("beer_id"));
+        price = Float.parseFloat(jobj.getString("price"));
+        timestamp = jobj.getString("timestamp");
+    }
+}
+
+class FPDBReplyPurchases_Factory implements FPDBReplyFactory<FPDBReplyPurchases>
+{
+    public FPDBReplyPurchases create(JSONObject jobj) throws JSONException
+    {
+        return new FPDBReplyPurchases(jobj);
+    }
+}
+
+
 class FPDBReplyIOU
 {
     public String username;
@@ -132,12 +147,12 @@ class FPDB
         this.url = String.format("%s?username=%s&password=%s", url, this.username, this.password);
     }
 
-    private String http_get_json(String url) throws IOException
+    private String http_get_json(String url) throws FPDBException
     {
         String line, jstr = "";
         URLConnection co;
         InputStreamReader sr;
-        BufferedReader br = null;
+        BufferedReader br;
 
         try {
             co = (new URL(url)).openConnection();
@@ -149,28 +164,30 @@ class FPDB
             }
         } catch (IOException e) {
             new FPDBException(e.getMessage());
-        } finally {
-            if (br != null) {
-                br.close();
-            }
         }
 
         return jstr;
     }
 
-    public FPDBReply<FPDBReplyInventory> inventory_get() throws FPDBException, IOException
+    public FPDBReply<FPDBReplyInventory> inventory_get() throws FPDBException
     {
         String jstr = http_get_json(url + "&action=inventory_get");
         return new FPDBReply<FPDBReplyInventory>(jstr, new FPDBReplyInventory_Factory());
     }
 
-    public FPDBReply<FPDBReplyIOU> iou_get() throws FPDBException, IOException
+    public FPDBReply<FPDBReplyPurchases> purchases_get() throws FPDBException
+    {
+        String jstr = http_get_json(url + "&action=iou_get");
+        return new FPDBReply<FPDBReplyPurchases>(jstr, new FPDBReplyPurchases_Factory());
+    }
+
+    public FPDBReply<FPDBReplyIOU> iou_get() throws FPDBException
     {
         String jstr = http_get_json(url + "&action=iou_get");
         return new FPDBReply<FPDBReplyIOU>(jstr, new FPDBReplyIOU_Factory());
     }
 
-    public FPDBReply<FPDBReplyIOU> iou_get_all() throws FPDBException, IOException
+    public FPDBReply<FPDBReplyIOU> iou_get_all() throws FPDBException
     {
         String jstr = http_get_json(url + "&action=iou_get_all");
         return new FPDBReply<FPDBReplyIOU>(jstr, new FPDBReplyIOU_Factory());
