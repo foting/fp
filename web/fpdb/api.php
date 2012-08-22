@@ -79,19 +79,19 @@
         return new API_Reply("inventory_get", $qres);
     }
 
-    function action_purchase_get($db, $user_id)
+    function action_purchases_get($db, $user_id)
     {
-        $qres = $db->purchase_get($user_id)->get_array();
-        return new API_Reply("inventory_get", $qres);
+        $qres = $db->purchases_get($user_id)->get_array();
+        return new API_Reply("purchases_get", $qres);
     }
 
-    function action_purchase_get_all($db, $user_id)
+    function action_purchases_get_all($db, $user_id)
     {
-        $qres = $db->purchase_get_all()->get_array();
-        return new API_Reply("inventory_get", $qres);
+        $qres = $db->purchases_get_all()->get_array();
+        return new API_Reply("purchases_get_all", $qres);
     }
 
-    function action_purchase_append($db, $user_id)
+    function action_purchases_append($db, $user_id)
     {
         $beer_id = $_GET["beer_id"];
         if (!$beer_id) {
@@ -162,19 +162,19 @@
                 $reply = action_inventory_get($db, $user);
                 break;
 
-            case "purchase_get":
+            case "purchases_get":
                 check_credentials($cred, CRED_USER);
-                $reply = action_purchase_get($db, $user);
+                $reply = action_purchases_get($db, $user);
                 break;
 
-            case "purchase_get_all":
+            case "purchases_get_all":
                 check_credentials($cred, CRED_ADMIN);
-                $reply = action_purchase_get_all($db, $user);
+                $reply = action_purchases_get_all($db, $user);
                 break;
 
-            case "purchase_append":
+            case "purchases_append":
                 check_credentials($cred, CRED_USER);
-                $reply = action_purchase_append($db, $user);
+                $reply = action_purchases_append($db, $user);
                 break;
 
             case "iou_get":
