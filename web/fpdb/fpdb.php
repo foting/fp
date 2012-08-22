@@ -278,19 +278,19 @@
         }
 
 
-        public function purchase_get($user_id)
+        public function purchases_get($user_id)
         {
             $q = sprintf($this->purchase_history_q, $user_id);
             return $this->query($q);
         }
 
-        public function purchase_get_all()
+        public function purchases_get_all()
         {            
             return $this->query($this->purchase_history_all_q);
         }
 
         /* Only *_append method exposed to users */
-        public function purchase_append($user_id, $beer_id)
+        public function purchases_append($user_id, $beer_id)
         {
             $q = sprintf("INSERT INTO beers_sold
                           (user_id, beer_id)
