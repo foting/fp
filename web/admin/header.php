@@ -31,9 +31,9 @@
         </div>
         <ul class="menu">
             <li><a href="../admin/inventory.php">INVENTORY</a></li>
-            <li><a href="../admin/iou.php">BANK</a></li>
-            <li><a href="../admin/payment.php">U PAY UP</a></li>
-            <li><a href="../admin/purchase.php">U BUY</a></li>
-            <li><a href="../admin/add_user.php">ADD U</a></li>
+            <li><a href="../admin/iou.php">UR BANK BRO</a></li>
+            <li><a href="../admin/payment.php">U PAY UP BRO</a></li>
+            <li><a href="../admin/purchase.php">U BUY BRO</a></li>
+            <li><a href="../admin/add_user.php">ADD BRO</a></li>
 		</ul>
-
+		<div class="clearfix"></div>

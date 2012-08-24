@@ -59,42 +59,36 @@
 
     class FPDB_Results implements Iterator
     {
-        private $sql_results;
-        private $iterator;
+        private $results_array;
         private $position;
 
         function  __construct($sql_results)
         {
-            $this->sql_results = $sql_results;
-            $this->iterator = True; // In case valid is called before rewind
+            $this->results_array = array();
+            while ($iter = sql_fetch_assoc($sql_results)) {
+                array_push($this->results_array, $iter);
+            }
             $this->position = 0;
         }
 
         public function get_array()
         {
-            $a = array();
-            while ($iter = sql_fetch_assoc($this->sql_results)) {
-                array_push($a, $iter);
-            }
-            return $a;
+            return $this->results_array;
         }
 
         /* Iterator interface */
         public function current()
         {
-            return $this->iterator;
+            return $this->results_array[$this->position];
         }
 
         public function next()
         {
-            $this->iterator = sql_fetch_assoc($this->sql_results);
-            $this->position++;
-            return $this->iterator; // Not requred by Iterator
+            ++$this->position;
         }
 
         public function rewind()
         {
-            $this->iterator = sql_fetch_assoc($this->sql_results);
             $this->position = 0;
         }
 
@@ -105,7 +99,7 @@
 
         public function valid()
         {
-            return $this->iterator ? True : False;
+            return isset($this->results_array[$this->position]);
         }
 
     }

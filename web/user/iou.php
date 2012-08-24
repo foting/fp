@@ -3,15 +3,84 @@
     include_once "../fpdb/fpdb.php";
 
     $user_id = $_SESSION["user_id"];
+    $assets = 0;
+
+    /*
+     * Returns the array of purchase data
+     */
+    function getPurchases($db, $user_id) {
+        $qres;
+            try {
+            $qres = $db->purchases_get($user_id);
+        } catch (FPDB_Exception $e) {
+            die($e->getMessage());
+        }
+        return $qres;
+    }
+
+     /*
+     * Returns the array of payment data
+     */
+    function getPayments($db, $user_id) {
+        $qres;
+            try {
+            $qres = $db->payment_get($user_id);
+        } catch (FPDB_Exception $e) {
+            die($e->getMessage());
+        }
+        return $qres;
+    }
+    
+    function formatPurchases($qres)
+    {
+        $p_table = "";
+        $p_table .= "<div class=\"tablewrapper\">";
+        $p_table .= "<h2>Purchases</h2>";
+        $p_table .= "<table class=\"history\">";
+        foreach ($qres as $purchase)
+        {
+            $p_table .= sprintf("<tr><th>%s</th><td>%s (%d)</td><td class=\"right\">%d kr</td></tr>",
+                $purchase["timestamp"], $purchase["namn"], $purchase["beer_id"], $purchase["price"]);
+        }  
+        $p_table .= "</table>";
+        $p_table .= "</div>";
+        
+        return $p_table;
+    }
+    
+    function formatPayments($qres)
+    {
+        $p_table = "";
+        $p_table .= "<div class=\"tablewrapper\">";
+        $p_table .= "<h2>Payments</h2>";
+        $p_table .= "<table class=\"history\">";
+        foreach ($qres as $payment)
+        {
+            $p_table .= sprintf("<tr><th>%s</th><td class=\"right\">%d kr</td></tr>",
+                $payment["timestamp"], $payment["amount"]);
+        }
+        $p_table .= "</table>";
+        $p_table .= "</div>";
+        
+        return $p_table;
+    }
+    
+    $db;
     try {
         $db = new FPDB_User();
-        $iou = $db->iou_get($user_id)->next();
     } catch (FPDB_Exception $e) {
         die($e->getMessage());
     }
+    
+    $assets = 0;
 
-    $assets = isset($iou["assets"]) ? $iou["assets"] : 0;
-
+    $purchases = getPurchases($db, $user_id);
+    foreach ($purchases as $p)
+        $assets -= $p["price"];
+    $payments = getPayments($db, $user_id);
+    foreach ($payments as $p)
+        $assets += $p["amount"];
+        
     if ($assets >= 0) {
         printf("<div class=\"assets\"><h1>I'm good!</h1>");
         printf("Many monies in the bank:");
@@ -27,35 +96,10 @@
     
 
         /* List purchases */
-    try {
-        $qres = $db->purchase_get($user_id);
-    } catch (FPDB_Exception $e) {
-        die($e->getMessage());
-    }
-
-    printf("<div class=\"tablewrapper\">");
-    printf("<h2>Purchases</h2>");
-    printf("<table class=\"history\">");
-    foreach ($qres as $purchase) {
-        printf("<tr><th>%s</th><td>%s (%d)</td><td class=\"right\">%d kr</td></tr>",
-            $purchase["timestamp"], $purchase["namn"], $purchase["beer_id"], $purchase["price"]);
-    }  
-    printf("</table>");
+    echo formatPurchases($purchases);
     
     /* List payments */
-    try {
-        $qres = $db->payment_get($user_id);
-    } catch (FPDB_Exception $e) {
-        die($e->getMessage());
-    }
-
-    printf("<h2>Payments</h2>");
-    printf("<table class=\"history\">");
-    foreach ($qres as $payment) {
-        printf("<tr><th>%s</th><td class=\"right\">%d kr</td></tr>",
-            $payment["timestamp"], $payment["amount"]);
-    }
-    printf("</table>");
-    printf("</div>");
+    echo formatPayments($payments);
+    
     include_once "footer.php"; 
 ?>
