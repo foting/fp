@@ -12,7 +12,7 @@
 
     /* List purchases */
     try {
-        $qres = $db->purchase_get($user_id);
+        $qres = $db->purchases_get($user_id);
     } catch (FPDB_Exception $e) {
         die($e->getMessage());
     }

@@ -7,7 +7,7 @@
     include_once "../fpdb/fpdb.php";
     try {
         $db = new FPDB_User();
-        $qres = $db->user_get($username)->next();
+        $qres = $db->user_get($username)->current();
     } catch (FPDB_Exception $e) {
         die($e->getMessage());
     }
