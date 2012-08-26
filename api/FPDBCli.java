@@ -13,9 +13,11 @@ class FPDBCli
 
         Collection<IOU.Reply> iou_r = null;
         Collection<Purchases.Reply> pur_r = null;
+        Collection<Inventory.Reply> inv_r = null;
         try {
             iou_r = (new IOU(url, username, password)).get();
             pur_r = (new Purchases(url, username, password)).get();
+            inv_r = (new Inventory(url, username, password)).get();
         } catch (Exception e) {
             System.out.println(e.getMessage());
             System.exit(-1);
@@ -38,5 +40,15 @@ class FPDBCli
             System.out.println("timestamp: " + i.timestamp);
             System.out.println("");
         }
+
+        System.out.println("== Inventory ==");
+        for (Inventory.Reply i : inv_r) {
+            System.out.println("name: " + i.name);
+            System.out.println("beer_id: " + i.beer_id);
+            System.out.println("count: " + i.count);
+            System.out.println("price: " + i.price);
+            System.out.println("");
+        }
+
     }
 }
