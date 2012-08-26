@@ -1,8 +1,12 @@
 package se.uu.it.fridaypub;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+
 import java.net.URL;
 import java.net.URLConnection;
 
@@ -39,13 +43,50 @@ class WebPage
     }
 }
 
+class JSONArrayIterator implements Iterator<JSONObject>
+{
+    private JSONArray array;
+    private int position;
+
+    public JSONArrayIterator(JSONArray array)
+    {
+        this.array = array;
+        this.position = 0;
+    }
+
+    public boolean hasNext()
+    {
+        return position < array.length();
+    }
+
+    public JSONObject next()
+    {
+        JSONObject o;
+        try {
+            o = array.getJSONObject(position++);
+        } catch (JSONException e) {
+            throw new NoSuchElementException();
+        }
+        return o;
+    }
+
+    public void remove() 
+    {
+        throw new UnsupportedOperationException();
+    }
+}
 
 class FPBackend
 {
-    public class Reply
+    public class Reply implements Iterable<JSONObject>
     {
         public String type;
         public JSONArray payload;
+
+        public Iterator<JSONObject> iterator()
+        {
+            return new JSONArrayIterator(payload);
+        }
     }
 
     public Reply get(String url) throws FPDBException
@@ -92,8 +133,8 @@ abstract class FPDB
         }
 
         try {
-            for (int i = 0; i < reply.payload.length(); i++) {
-                pushReply(reply.payload.getJSONObject(i));
+            for (JSONObject o : reply) {
+                pushReply(o);
             }
         } catch (JSONException e) {
             throw new FPDBException(e);
