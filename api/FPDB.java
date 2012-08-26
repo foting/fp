@@ -11,6 +11,41 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
+class WebPage
+{
+    private String url;
+
+    public WebPage(String url)
+    {
+        this.url = url;
+    }
+
+    public String get() throws IOException
+    {
+        String page = "";
+        URLConnection co;
+        InputStreamReader sr = null;
+        BufferedReader br = null;
+
+        try {
+            co = (new URL(url)).openConnection();
+            sr = new InputStreamReader(co.getInputStream());
+            br = new BufferedReader(sr);
+
+            String line;
+            while ((line = br.readLine()) != null) {
+                page += line;
+            }
+        } finally {
+            if (br != null) {
+                br.close(); //XXX Does this close sr?
+            }
+        }
+
+        return page;
+    }
+}
+
 
 abstract class FPDB
 {
@@ -23,27 +58,6 @@ abstract class FPDB
 
     abstract void pushReply(JSONObject jobj) throws JSONException;
     
-    private String httpGetJson(String url) throws FPDBException
-    {
-        String line, jstr = "";
-        URLConnection co;
-        InputStreamReader sr;
-        BufferedReader br;
-
-        try {
-            co = (new URL(url)).openConnection();
-            sr = new InputStreamReader(co.getInputStream());
-            br = new BufferedReader(sr);
-
-            while ((line = br.readLine()) != null) {
-                jstr += line;
-            }
-        } catch (IOException e) {
-            new FPDBException(e);
-        }
-
-        return jstr;
-    }
 
     private JSONArray jsonParse(String jstr, String expected_type) throws FPDBException
     {
@@ -79,7 +93,11 @@ abstract class FPDB
 
     protected JSONArray pullPayload(String url, String expected_type) throws FPDBException
     {
-        return jsonParse(httpGetJson(url), expected_type);
+        try {
+            return jsonParse((new WebPage(url)).get(), expected_type);
+        } catch (IOException e) {
+            throw new FPDBException(e);
+        }
     }
 }
 
