@@ -47,6 +47,38 @@ class WebPage
 }
 
 
+class FPBackend
+{
+    public class Reply
+    {
+        public String type;
+        public JSONArray payload;
+    }
+
+    public Reply get(String url) throws FPDBException
+    {
+        String page;
+
+        try {
+            page = (new WebPage(url)).get();
+        } catch (IOException e) {
+            throw new FPDBException(e);
+        }
+
+        Reply reply = new Reply();
+        try {
+            JSONObject o = new JSONObject(new JSONTokener(page));
+
+            reply.type = o.getString("type");
+            reply.payload = o.getJSONArray("payload");
+        } catch (JSONException e) {
+            throw new FPDBException(e);
+        }
+
+        return reply;
+    }
+}
+
 abstract class FPDB
 {
     protected String url;
@@ -58,44 +90,19 @@ abstract class FPDB
 
     abstract void pushReply(JSONObject jobj) throws JSONException;
     
-
-    private JSONArray jsonParse(String jstr, String expected_type) throws FPDBException
+    protected void pullPayload(String url, String expected_type) throws FPDBException
     {
-        JSONArray jarr;
+        FPBackend.Reply reply = (new FPBackend()).get(url);
 
-        try {
-            JSONObject jobj;
-            String type;
-
-            jobj = new JSONObject(new JSONTokener(jstr));
-
-            jarr = jobj.getJSONArray("payload");
-            type = (String)jobj.get("type");
-
-            if (type.equals("error")) {
-                throw new FPDBException(jarr.getJSONObject(0).getString("msg"));
-            }
-
-            if (!type.equals(expected_type)) {
-                throw new FPDBException("Backend error: Wrong reply type");
-            }
-
-            for (int i = 0; i < jarr.length(); i++) {
-                pushReply(jarr.getJSONObject(i));
-            }
-
-        } catch (JSONException e) {
-            throw new FPDBException(e);
+        if (!reply.type.equals(expected_type)) {
+            throw new FPDBException("Backend protocol error");
         }
 
-        return jarr;
-    }
-
-    protected JSONArray pullPayload(String url, String expected_type) throws FPDBException
-    {
         try {
-            return jsonParse((new WebPage(url)).get(), expected_type);
-        } catch (IOException e) {
+            for (int i = 0; i < reply.payload.length(); i++) {
+                pushReply(reply.payload.getJSONObject(i));
+            }
+        } catch (JSONException e) {
             throw new FPDBException(e);
         }
     }
