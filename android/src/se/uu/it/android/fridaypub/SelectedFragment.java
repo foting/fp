@@ -17,6 +17,12 @@ package se.uu.it.android.fridaypub;
 
 import java.util.Collection;
 
+import se.uu.it.fridaypub.FPDBException;
+import se.uu.it.fridaypub.IOU;
+import se.uu.it.fridaypub.IOUUser;
+import se.uu.it.fridaypub.Inventory;
+import se.uu.it.fridaypub.Purchases;
+
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -103,8 +109,8 @@ public class SelectedFragment extends Fragment {
 		switch (position) {
 		case 0:
 			useTextView(position);
+			new GetIOUUser().execute("");
 			new GetIOU().execute("");
-			new GetIOUAll().execute("");
 			new GetInventory().execute("");
 			break;
 		case 1:
@@ -113,8 +119,8 @@ public class SelectedFragment extends Fragment {
 			break;
 		case 2:
 			useTextView(position);
+			new GetIOUUser().execute("");
 			new GetIOU().execute("");
-			new GetIOUAll().execute("");
 			break;
 		case 4:
 			useTextView(position);
@@ -165,12 +171,12 @@ public class SelectedFragment extends Fragment {
 		}
 	}
 	
-	private class GetIOUAll extends AsyncTask<String, Void, Collection<IOUAll.Reply>> {
+	private class GetIOUUser extends AsyncTask<String, Void, Collection<IOUUser.Reply>> {
 		/** The system calls this to perform work in a worker thread and
 		 * delivers it the parameters given to AsyncTask.execute() */
-		protected Collection<IOUAll.Reply> doInBackground(String... urls) {
+		protected Collection<IOUUser.Reply> doInBackground(String... urls) {
 			try {
-				return (new IOUAll(url, username, password)).get();
+				return (new IOUUser(url, username, password)).get();
 			} catch (FPDBException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -180,8 +186,8 @@ public class SelectedFragment extends Fragment {
 
 		/** The system calls this to perform work in the UI thread and delivers
 		 * the result from doInBackground() */
-		protected void onPostExecute(Collection<IOUAll.Reply> reply) {
-			for (IOUAll.Reply i : reply) {
+		protected void onPostExecute(Collection<IOUUser.Reply> reply) {
+			for (IOUUser.Reply i : reply) {
 	        	selection.append("Username: " + i.username + "\n");
 	        	selection.append("First name: " + i.first_name + "\n");
 	        	selection.append("Last name: " + i.last_name + "\n");

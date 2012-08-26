@@ -1,9 +1,15 @@
 package se.uu.it.fridaypub;
 
-import java.io.*;
-import java.net.*;
-import java.util.*;
-import org.json.*;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.net.URLConnection;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
 
 
 abstract class FPDB

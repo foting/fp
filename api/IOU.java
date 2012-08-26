@@ -1,8 +1,10 @@
 package se.uu.it.fridaypub;
 
-import java.util.*;
-import org.json.*;
+import java.util.Collection;
+import java.util.LinkedList;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 
 public class IOU extends FPDB
 {
