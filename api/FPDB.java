@@ -113,33 +113,3 @@ class FPBackend
     }
 }
 
-abstract class FPDB
-{
-    protected String url;
-
-    public FPDB(String url, String username, String password)
-    {
-        this.url = String.format("%s?username=%s&password=%s", url, username, password);
-    }
-
-    abstract void pushReply(JSONObject jobj) throws JSONException;
-    
-    protected void pullPayload(String url, String expected_type) throws FPDBException
-    {
-        FPBackend.Reply reply = (new FPBackend()).get(url);
-
-        if (!reply.type.equals(expected_type)) {
-            throw new FPDBException("Backend protocol error");
-        }
-
-        try {
-            for (JSONObject o : reply) {
-                pushReply(o);
-            }
-        } catch (JSONException e) {
-            throw new FPDBException(e);
-        }
-    }
-}
-
-
