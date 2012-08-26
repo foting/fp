@@ -13,14 +13,7 @@ import org.json.JSONTokener;
 
 class WebPage
 {
-    private String url;
-
-    public WebPage(String url)
-    {
-        this.url = url;
-    }
-
-    public String get() throws IOException
+    public static String get(String url) throws IOException
     {
         String page = "";
         URLConnection co;
@@ -60,7 +53,7 @@ class FPBackend
         String page;
 
         try {
-            page = (new WebPage(url)).get();
+            page = WebPage.get(url);
         } catch (IOException e) {
             throw new FPDBException(e);
         }
