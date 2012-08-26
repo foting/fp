@@ -4,13 +4,16 @@ import java.util.*;
 import org.json.*;
 
 
-public class Purchases extends FPDB
+public class Purchases
 {
-    private LinkedList<Reply> payload;
-    
+    private String url;
+
     public Purchases(String url, String username, String password)
     {
-        super(url, username, password);
+        this.url = url;
+        this.url += "?username=" + username;
+        this.url += "&password=" + password;
+        this.url += "&action=purchases_get";
     }
 
     public class Reply
@@ -29,15 +32,23 @@ public class Purchases extends FPDB
         }
     }
 
-    protected void pushReply(JSONObject jobj) throws JSONException
-    {
-        payload.add(new Reply(jobj));
-    }
-
     public Collection<Reply> get() throws FPDBException
     {
-        payload = new LinkedList<Reply>();
-        pullPayload(url + "&action=purchases_get", "purchases_get");
+        FPDB.Reply reply = (new FPDB()).get(url);
+
+        if (!reply.type.equals("purchases_get")) {
+            throw new FPDBException("Backend protocol error");
+        }
+
+        LinkedList<Reply> payload = new LinkedList<Reply>();
+        try {
+            for (JSONObject o : reply) {
+                payload.add(new Reply(o));
+            }
+        } catch (JSONException e) {
+            throw new FPDBException(e);
+        }
+
         return payload;
     }
 }

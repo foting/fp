@@ -6,20 +6,27 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class IOUUser extends FPDB {
-	private LinkedList<Reply> payload;
+public class IOUUser
+{
+	private String url;
 
-	public IOUUser(String url, String username, String password) {
-		super(url, username, password);
+	public IOUUser(String url, String username, String password)
+    {
+        this.url = url;
+        this.url += "?username=" + username;
+        this.url += "&password=" + password;
+        this.url += "&action=iou_get";
 	}
 
-	public class Reply {
+	public class Reply
+    {
 		public String username;
 		public String first_name;
 		public String last_name;
 		public float assets;
 
-		public Reply(JSONObject jobj) throws JSONException {
+		public Reply(JSONObject jobj) throws JSONException
+        {
 			username = jobj.getString("username");
 			first_name = jobj.getString("first_name");
 			last_name = jobj.getString("last_name");
@@ -27,13 +34,23 @@ public class IOUUser extends FPDB {
 		}
 	}
 
-	protected void pushReply(JSONObject jobj) throws JSONException {
-		payload.add(new Reply(jobj));
-	}
+	public Collection<Reply> get() throws FPDBException
+    {
+        FPDB.Reply reply = (new FPDB()).get(url);
 
-	public Collection<Reply> get() throws FPDBException {
-		payload = new LinkedList<Reply>();
-		pullPayload(url + "&action=iou_get", "iou_get");
-		return payload;
+        if (!reply.type.equals("iou_get")) {
+            throw new FPDBException("Backend protocol error");
+        }
+
+        LinkedList<Reply> payload = new LinkedList<Reply>();
+        try {
+            for (JSONObject o : reply) {
+                payload.add(new Reply(o));
+            }
+        } catch (JSONException e) {
+            throw new FPDBException(e);
+        }
+
+        return payload;
 	}
 }

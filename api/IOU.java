@@ -6,13 +6,16 @@ import java.util.LinkedList;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public class IOU extends FPDB
+public class IOU
 {
-    private LinkedList<Reply> payload;
+    private String url;
 
     public IOU(String url, String username, String password)
     {
-        super(url, username, password);
+        this.url = url;
+        this.url += "?username=" + username;
+        this.url += "&password=" + password;
+        this.url += "&action=iou_get_all";
     }
 
     public class Reply
@@ -31,15 +34,23 @@ public class IOU extends FPDB
         }
     }
 
-    protected void pushReply(JSONObject jobj) throws JSONException
-    {
-        payload.add(new Reply(jobj));
-    }
-
     public Collection<Reply> get() throws FPDBException
     {
-        payload = new LinkedList<Reply>();
-        pullPayload(url + "&action=iou_get_all", "iou_get_all");
+        FPDB.Reply reply = (new FPDB()).get(url);
+
+        if (!reply.type.equals("iou_get_all")) {
+            throw new FPDBException("Backend protocol error");
+        }
+
+        LinkedList<Reply> payload = new LinkedList<Reply>();
+        try {
+            for (JSONObject o : reply) {
+                payload.add(new Reply(o));
+            }
+        } catch (JSONException e) {
+            throw new FPDBException(e);
+        }
+
         return payload;
     }
 }
