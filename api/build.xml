@@ -37,6 +37,7 @@
                 <path refid="ext_lib-classpath"/>
                 <path location="${jar_file}"/>
             </classpath>
+            <arg value="${args}"/>
         </java>
     </target>
 </project>

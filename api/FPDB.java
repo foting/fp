@@ -1,115 +1,90 @@
 package se.uu.it.fridaypub;
 
+import java.util.Collection;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.NoSuchElementException;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-
-import java.net.URL;
-import java.net.URLConnection;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-class HttpGet
+interface ReplyFactory<T>
 {
-    public static String get(String url) throws IOException
-    {
-        String page = "";
-        URLConnection co;
-        InputStreamReader sr = null;
-        BufferedReader br = null;
-
-        try {
-            co = (new URL(url)).openConnection();
-            sr = new InputStreamReader(co.getInputStream());
-            br = new BufferedReader(sr);
-
-            String line;
-            while ((line = br.readLine()) != null) {
-                page += line;
-            }
-        } finally {
-            if (br != null) {
-                br.close(); //XXX Does this close sr?
-            }
-        }
-
-        return page;
-    }
+    public T create(JSONObject jobj) throws JSONException;
 }
 
-class JSONArrayIterator implements Iterator<JSONObject>
+class Reply<T> implements Iterable<T>
 {
-    private JSONArray array;
-    private int position;
+    private LinkedList<T> payload;
 
-    public JSONArrayIterator(JSONArray array)
+    public Reply(String reply, ReplyFactory<T> factory) throws FPDBException
     {
-        this.array = array;
-        this.position = 0;
-    }
-
-    public boolean hasNext()
-    {
-        return position < array.length();
-    }
-
-    public JSONObject next()
-    {
-        JSONObject o;
+        payload = new LinkedList<T>();
         try {
-            o = array.getJSONObject(position++);
+            JSONObject jobj = new JSONObject(new JSONTokener(reply));
+
+            JSONArray jarr = jobj.getJSONArray("payload");
+            for (int i = 0; i < jarr.length(); i++) {
+                payload.add(factory.create(jarr.getJSONObject(i)));
+            }
         } catch (JSONException e) {
-            throw new NoSuchElementException();
+            throw new FPDBException(e);
         }
-        return o;
     }
 
-    public void remove() 
+    public Iterator<T> iterator()
     {
-        throw new UnsupportedOperationException();
+        return payload.iterator();
     }
 }
 
 class FPDB
 {
-    public class Reply implements Iterable<JSONObject>
-    {
-        public String type;
-        public JSONArray payload;
+    private String url;
 
-        public Iterator<JSONObject> iterator()
-        {
-            return new JSONArrayIterator(payload);
-        }
+    public FPDB(String url, String username, String password)
+    {
+        this.url = url;
+        this.url += "?username=" + username;
+        this.url += "&password=" + password;
     }
 
-    public Reply get(String url) throws FPDBException
+    private String httpGet(String url) throws FPDBException
     {
-        String page;
-
+        String content;
         try {
-            page = HttpGet.get(url);
+            content = HttpGet.get(url);
         } catch (IOException e) {
             throw new FPDBException(e);
         }
+        return content;
+    }
 
-        Reply reply = new Reply();
-        try {
-            JSONObject o = new JSONObject(new JSONTokener(page));
+    public Reply<IOUReply> IOUGet() throws FPDBException
+    {
+        String reply = httpGet(url + "&action=iou_get");
+        return new Reply<IOUReply>(reply, new IOUReplyFactory());
+    }
 
-            reply.type = o.getString("type");
-            reply.payload = o.getJSONArray("payload");
-        } catch (JSONException e) {
-            throw new FPDBException(e);
-        }
+    public Reply<IOUUserReply> IOUUserGet() throws FPDBException
+    {
+        String reply = httpGet(url + "&action=iou_get_all");
+        return new Reply<IOUUserReply>(reply, new IOUUserReplyFactory());
+    }
 
-        return reply;
+    public Reply<InventoryReply> inventoryGet() throws FPDBException
+    {
+        String reply = httpGet(url + "&action=inventory_get_all");
+        return new Reply<InventoryReply>(reply, new InventoryReplyFactory());
+    }
+
+    public Reply<PurchasesReply> purchasesGet() throws FPDBException
+    {
+        String reply = httpGet(url + "&action=purchases_get_all");
+        return new Reply<PurchasesReply>(reply, new PurchasesReplyFactory());
     }
 }
-
