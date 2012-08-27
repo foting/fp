@@ -15,7 +15,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 
-class WebPage
+class HttpGet
 {
     public static String get(String url) throws IOException
     {
@@ -94,7 +94,7 @@ class FPDB
         String page;
 
         try {
-            page = WebPage.get(url);
+            page = HttpGet.get(url);
         } catch (IOException e) {
             throw new FPDBException(e);
         }
