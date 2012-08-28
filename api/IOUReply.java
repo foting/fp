@@ -1,7 +1,5 @@
 package se.uu.it.fridaypub;
 
-import java.util.Collection;
-
 import org.json.JSONException;
 import org.json.JSONObject;
 

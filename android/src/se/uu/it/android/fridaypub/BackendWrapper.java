@@ -1,12 +1,12 @@
 package se.uu.it.android.fridaypub;
 
-import java.util.Collection;
-
+import se.uu.it.fridaypub.FPDB;
 import se.uu.it.fridaypub.FPDBException;
-import se.uu.it.fridaypub.IOU;
-import se.uu.it.fridaypub.IOUUser;
-import se.uu.it.fridaypub.Inventory;
-import se.uu.it.fridaypub.Purchases;
+import se.uu.it.fridaypub.IOUReply;
+import se.uu.it.fridaypub.IOUUserReply;
+import se.uu.it.fridaypub.InventoryReply;
+import se.uu.it.fridaypub.PurchasesReply;
+import se.uu.it.fridaypub.Reply;
 import android.os.AsyncTask;
 import android.widget.TextView;
 
@@ -135,7 +135,7 @@ public class BackendWrapper {
 
             Reply<PurchasesReply> reply = null;
 			try {
-				repy = (new FPDB(url, username, password)).purchasesGet();
+				reply = (new FPDB(url, username, password)).purchasesGet();
 			} catch (FPDBException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
