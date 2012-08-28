@@ -17,14 +17,17 @@ public class BackendWrapper {
     private final String password = "gurra";
     
 	// Throw queries at the FPDB and iterate over results.
-	protected class GetIOU extends AsyncTask<TextView, Void, Collection<IOU.Reply>> {
+	protected class GetIOU extends AsyncTask<TextView, Void, Reply<IOUReply>> {
+		private TextView selection;
+
 		/** The system calls this to perform work in a worker thread and
 		 * delivers it the parameters given to AsyncTask.execute() */
-		private TextView selection;
-		protected Collection<IOU.Reply> doInBackground(TextView... v) {
+		protected Reply<IOUReply> doInBackground(TextView... v) {
 			selection = v[0];
+
+            Reply<IOUReply> reply = null;
 			try {
-				return (new IOU(url, username, password)).get();
+				reply = (new FPDB(url, username, password)).IOUGet();
 			} catch (FPDBException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -34,9 +37,9 @@ public class BackendWrapper {
 
 		/** The system calls this to perform work in the UI thread and delivers
 		 * the result from doInBackground() */
-		protected void onPostExecute(Collection<IOU.Reply> reply) {
+		protected void onPostExecute(Reply<IOUReply> reply) {
 			try {
-				for (IOU.Reply i : reply) {
+				for (IOUReply i : reply) {
 					selection.append("Username: " + i.username + "\n");
 					selection.append("First name: " + i.first_name + "\n");
 					selection.append("Last name: " + i.last_name + "\n");
@@ -50,26 +53,29 @@ public class BackendWrapper {
 		}
 	}
 	
-	protected class GetIOUUser extends AsyncTask<TextView, Void, Collection<IOUUser.Reply>> {
+	protected class GetIOUUser extends AsyncTask<TextView, Void, Reply<IOUUserReply>> {
+		private TextView selection;
+
 		/** The system calls this to perform work in a worker thread and
 		 * delivers it the parameters given to AsyncTask.execute() */
-		private TextView selection;
-		protected Collection<IOUUser.Reply> doInBackground(TextView... v) {
+		protected Reply<IOUUserReply> doInBackground(TextView... v) {
 			selection = v[0];
+
+            Reply<IOUUserReply> reply = null;
 			try {
-				return (new IOUUser(url, username, password)).get();
+				reply = (new FPDB(url, username, password)).IOUUserGet();
 			} catch (FPDBException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			return null;
+			return reply;
 		}
 
 		/** The system calls this to perform work in the UI thread and delivers
 		 * the result from doInBackground() */
-		protected void onPostExecute(Collection<IOUUser.Reply> reply) {
+		protected void onPostExecute(Reply<IOUUserReply> reply) {
 			try {
-				for (IOUUser.Reply i : reply) {
+				for (IOUUserReply i : reply) {
 					selection.append("User ID: " + i.user_id + "\n");
 					selection.append("First name: " + i.first_name + "\n");
 					selection.append("Last name: " + i.last_name + "\n");
@@ -83,26 +89,29 @@ public class BackendWrapper {
 		}
 	}
 	
-	protected class GetInventory extends AsyncTask<TextView, Void, Collection<Inventory.Reply>> {
+	protected class GetInventory extends AsyncTask<TextView, Void, Reply<InventoryReply>> {
+		private TextView selection;
+
 		/** The system calls this to perform work in a worker thread and
 		 * delivers it the parameters given to AsyncTask.execute() */
-		private TextView selection;
-		protected Collection<Inventory.Reply> doInBackground(TextView... v) {
+		protected Reply<InventoryReply> doInBackground(TextView... v) {
 			selection = v[0];
+
+            Reply<InventoryReply> reply = null;
 			try {
-				return (new Inventory(url, username, password)).get();
+				reply = (new FPDB(url, username, password)).inventoryGet();
 			} catch (FPDBException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			return null;
+			return reply;
 		}
 
 		/** The system calls this to perform work in the UI thread and delivers
 		 * the result from doInBackground() */
-		protected void onPostExecute(Collection<Inventory.Reply> reply) {
+		protected void onPostExecute(Reply<InventoryReply> reply) {
 			try {
-				for (Inventory.Reply i : reply) {
+				for (InventoryReply i : reply) {
 					selection.append("Beer ID: " + i.beer_id + "\n");
 					selection.append("Name: " + i.name + "\n");
 					selection.append("Price: " + i.price + "\n");
@@ -116,26 +125,29 @@ public class BackendWrapper {
 		}
 	}
 	
-	protected class GetPurchases extends AsyncTask<TextView, Void, Collection<Purchases.Reply>> {
+	protected class GetPurchases extends AsyncTask<TextView, Void, Reply<PurchasesReply>> {
+		private TextView selection;
+
 		/** The system calls this to perform work in a worker thread and
 		 * delivers it the parameters given to AsyncTask.execute() */
-		private TextView selection;
-		protected Collection<Purchases.Reply> doInBackground(TextView... v) {
+		protected Reply<PurchasesReply> doInBackground(TextView... v) {
 			selection = v[0];
+
+            Reply<PurchasesReply> reply = null;
 			try {
-				return (new Purchases(url, username, password)).get();
+				repy = (new FPDB(url, username, password)).purchasesGet();
 			} catch (FPDBException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			return null;
+			return reply;
 		}
 
 		/** The system calls this to perform work in the UI thread and delivers
 		 * the result from doInBackground() */
-		protected void onPostExecute(Collection<Purchases.Reply> reply) {
+		protected void onPostExecute(Reply<PurchasesReply> reply) {
 			try {
-				for (Purchases.Reply i : reply) {
+				for (PurchasesReply i : reply) {
 					selection.append("TS: " + i.timestamp + "\n");
 					selection.append("User ID: " + i.user_id + "\n");
 					selection.append("Beer ID: " + i.beer_id + "\n");
@@ -148,5 +160,4 @@ public class BackendWrapper {
 			}
 		}
 	}
-
 }
