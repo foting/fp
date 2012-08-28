@@ -19,5 +19,7 @@ limitations under the License.
 
     <string name="app_name">The Friday Pub</string>
     <string name="save_creds">Save Credentials</string>
+    <string name="credentials">Credentials</string>
+    <string name="settings">Settings</string>
     
 </resources>

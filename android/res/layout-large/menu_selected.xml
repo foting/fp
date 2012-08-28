@@ -35,23 +35,4 @@ limitations under the License.
         android:layout_weight="4"
         android:scrollbars="vertical" />
 
-    <Button
-        android:id="@+id/setpreference"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:text="@string/save_creds" />
-
-    <TextView
-        android:id="@+id/edittextstatus_user"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1" />
-
-    <TextView
-        android:id="@+id/edittextstatus_pass"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1" />
-
 </LinearLayout>

@@ -15,34 +15,18 @@
  */
 package se.uu.it.android.fridaypub;
 
-import java.util.Collection;
-
-import se.uu.it.fridaypub.FPDBException;
-import se.uu.it.fridaypub.IOU;
-import se.uu.it.fridaypub.IOUUser;
-import se.uu.it.fridaypub.Inventory;
-import se.uu.it.fridaypub.Purchases;
-
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.TextView;
 
 public class SelectedFragment extends Fragment {
 	final static String ARG_POSITION = "position";
 	int mCurrentPosition = 0;
 	protected TextView selection;
-	protected TextView editTextStatusUser, editTextStatusPass;
-	
-	// private final String url = "http://interact.it.uu.se/hci-dev/fp/fpdb/api.php";
-    private final String url = "http://user.it.uu.se/~deklov/fpdb/api.php";
-    private final String username = "gurra";
-    private final String password = "gurra";
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, 
@@ -84,50 +68,42 @@ public class SelectedFragment extends Fragment {
 		mCurrentPosition = position;
 	}
 
-	public void drawCredentialView(int position) {
-		// XXX Rita upp en vy för att visa/sätta credentials
-		selection = (TextView) getActivity().findViewById(R.id.selection);
-		selection.setText(Ipsum.Views[position]);
-		selection.setMovementMethod(new ScrollingMovementMethod());
-		mCurrentPosition = position;
-		Button buttonSetPreference = (Button)getActivity().findViewById(R.id.setpreference);
-		editTextStatusUser = (TextView)getActivity().findViewById(R.id.edittextstatus_user);
-		editTextStatusPass = (TextView)getActivity().findViewById(R.id.edittextstatus_pass);
-
-		buttonSetPreference.setOnClickListener(new Button.OnClickListener(){
-
-			@Override
-			public void onClick(View arg0) {
-				// TODO Auto-generated method stub
-				selection.append("Mer text!");
-			}});
-	}
-
 	public void updateSelectedView(int position) {
 
 		// XXX Släng in en case switch
+		/*
+		 * "Starting Point",	// 0
+         * "View Bank",			// 1
+         * "View Inventory",	// 2
+         * "Buy Beer",			// 3
+         * "Purchase History",	// 4
+         * "Accept Payment",	// 5
+         * "Restock",			// 6
+         * "Add User",			// 7
+         * "Credentials"		// 8
+		 */
+		
 		switch (position) {
 		case 0:
 			useTextView(position);
-			new GetIOUUser().execute("");
-			new GetIOU().execute("");
-			new GetInventory().execute("");
+			(new BackendWrapper()).new GetIOUUser().execute(selection);
+			(new BackendWrapper()).new GetIOU().execute(selection);
+			(new BackendWrapper()).new GetInventory().execute(selection);
+			(new BackendWrapper()).new GetPurchases().execute(selection);
 			break;
 		case 1:
 			useTextView(position);
-			new GetInventory().execute("");
+			(new BackendWrapper()).new GetIOUUser().execute(selection);
+			(new BackendWrapper()).new GetIOU().execute(selection);
 			break;
 		case 2:
 			useTextView(position);
-			new GetIOUUser().execute("");
-			new GetIOU().execute("");
+			(new BackendWrapper()).new GetInventory().execute(selection);
 			break;
 		case 4:
 			useTextView(position);
-			new GetPurchases().execute("");
+			(new BackendWrapper()).new GetPurchases().execute(selection);
 			break;
-		case 7:
-			drawCredentialView(position);
 		default:
 			useTextView(position);
 			selection.append("\nNot implemented.\n");
@@ -141,114 +117,5 @@ public class SelectedFragment extends Fragment {
 
 		// Save the current menu selection in case we need to recreate the fragment
 		outState.putInt(ARG_POSITION, mCurrentPosition);
-	}
-
-	// Throw queries at the FPDB and iterate over results.
-	private class GetIOU extends AsyncTask<String, Void, Collection<IOU.Reply>> {
-		/** The system calls this to perform work in a worker thread and
-		 * delivers it the parameters given to AsyncTask.execute() */
-		protected Collection<IOU.Reply> doInBackground(String... urls) {
-			try {
-				return (new IOU(url, username, password)).get();
-			} catch (FPDBException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return null;
-		}
-
-		/** The system calls this to perform work in the UI thread and delivers
-		 * the result from doInBackground() */
-		protected void onPostExecute(Collection<IOU.Reply> reply) {
-			for (IOU.Reply i : reply) {
-	        	selection.append("Username: " + i.username + "\n");
-	        	selection.append("First name: " + i.first_name + "\n");
-	        	selection.append("Last name: " + i.last_name + "\n");
-	        	selection.append("Assets: "+ i.assets + "\n");
-	        	selection.append("\n");
-	        }
-			selection.append("\n");
-		}
-	}
-	
-	private class GetIOUUser extends AsyncTask<String, Void, Collection<IOUUser.Reply>> {
-		/** The system calls this to perform work in a worker thread and
-		 * delivers it the parameters given to AsyncTask.execute() */
-		protected Collection<IOUUser.Reply> doInBackground(String... urls) {
-			try {
-				return (new IOUUser(url, username, password)).get();
-			} catch (FPDBException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return null;
-		}
-
-		/** The system calls this to perform work in the UI thread and delivers
-		 * the result from doInBackground() */
-		protected void onPostExecute(Collection<IOUUser.Reply> reply) {
-			for (IOUUser.Reply i : reply) {
-	        	selection.append("Username: " + i.username + "\n");
-	        	selection.append("First name: " + i.first_name + "\n");
-	        	selection.append("Last name: " + i.last_name + "\n");
-	        	selection.append("Assets: "+ i.assets + "\n");
-	        	selection.append("\n");
-	        }
-			selection.append("\n");
-		}
-	}
-	
-	private class GetInventory extends AsyncTask<String, Void, Collection<Inventory.Reply>> {
-		/** The system calls this to perform work in a worker thread and
-		 * delivers it the parameters given to AsyncTask.execute() */
-		protected Collection<Inventory.Reply> doInBackground(String... urls) {
-			try {
-				return (new Inventory(url, username, password)).get();
-			} catch (FPDBException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return null;
-		}
-
-		/** The system calls this to perform work in the UI thread and delivers
-		 * the result from doInBackground() */
-		protected void onPostExecute(Collection<Inventory.Reply> reply) {
-			for (Inventory.Reply i : reply) {
-	        	selection.append("Beer ID: " + i.beer_id + "\n");
-	        	selection.append("Name: " + i.name + "\n");
-	        	selection.append("Price: " + i.price + "\n");
-	        	selection.append("Count: "+ i.count + "\n");
-	        	selection.append("\n");
-	        }
-			selection.append("\n");
-		}
-	}
-	
-	private class GetPurchases extends AsyncTask<String, Void, Collection<Purchases.Reply>> {
-		/** The system calls this to perform work in a worker thread and
-		 * delivers it the parameters given to AsyncTask.execute() */
-		protected Collection<Purchases.Reply> doInBackground(String... urls) {
-			try {
-				return (new Purchases(url, username, password)).get();
-			} catch (FPDBException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			return null;
-		}
-
-		/** The system calls this to perform work in the UI thread and delivers
-		 * the result from doInBackground() */
-		protected void onPostExecute(Collection<Purchases.Reply> reply) {
-			for (Purchases.Reply i : reply) {
-	        	selection.append("TS: " + i.timestamp + "\n");
-	        	selection.append("User ID: " + i.user_id + "\n");
-	        	selection.append("Beer ID: " + i.beer_id + "\n");
-	        	selection.append("Price: "+ i.price + "\n");
-	        	selection.append("\n");
-	        }
-			selection.append("\n");
-		}
 	}
 }

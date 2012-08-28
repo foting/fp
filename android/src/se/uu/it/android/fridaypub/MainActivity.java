@@ -15,75 +15,100 @@
  */
 package se.uu.it.android.fridaypub;
 
-import se.uu.it.android.fridaypub.R;
-
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 public class MainActivity extends FragmentActivity 
-        implements MenuFragment.OnHeadlineSelectedListener {
+implements MenuFragment.OnMenuSelectedListener {
+	
+	/** Called when the activity is first created. */
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		setContentView(R.layout.menu_selected);
 
-    /** Called when the activity is first created. */
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.menu_selected);
+		// Check whether the activity is using the layout version with
+		// the fragment_container FrameLayout. If so, we must add the first fragment
+		if (findViewById(R.id.fragment_container) != null) {
 
-        // Check whether the activity is using the layout version with
-        // the fragment_container FrameLayout. If so, we must add the first fragment
-        if (findViewById(R.id.fragment_container) != null) {
+			// However, if we're being restored from a previous state,
+			// then we don't need to do anything and should return or else
+			// we could end up with overlapping fragments.
+			if (savedInstanceState != null) {
+				return;
+			}
 
-            // However, if we're being restored from a previous state,
-            // then we don't need to do anything and should return or else
-            // we could end up with overlapping fragments.
-            if (savedInstanceState != null) {
-                return;
-            }
+			// Create an instance of MenuFragment
+			MenuFragment firstFragment = new MenuFragment();
 
-            // Create an instance of MenuFragment
-            MenuFragment firstFragment = new MenuFragment();
+			// In case this activity was started with special instructions from an Intent,
+			// pass the Intent's extras to the fragment as arguments
+			firstFragment.setArguments(getIntent().getExtras());
 
-            // In case this activity was started with special instructions from an Intent,
-            // pass the Intent's extras to the fragment as arguments
-            firstFragment.setArguments(getIntent().getExtras());
+			// Add the fragment to the 'fragment_container' FrameLayout
+			getSupportFragmentManager().beginTransaction()
+			.add(R.id.fragment_container, firstFragment).commit();
+		}
+	}
 
-            // Add the fragment to the 'fragment_container' FrameLayout
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.fragment_container, firstFragment).commit();
-        }
-    }
+	/*
+	 * Create the settings-menu
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.default_menu, menu);
+		return true;
+	}
 
-    public void onMenuSelected(int position) {
-        // The user selected a menu item from the MenuFragment
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		// Handle item selection
+		switch (item.getItemId()) {
+		case R.id.credentials:
+			Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+	        startActivity(intent);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
 
-        // Capture the selected fragment from the activity layout
-        SelectedFragment selectedFrag = (SelectedFragment)
-                getSupportFragmentManager().findFragmentById(R.id.selected_fragment);
+	public void onMenuSelected(int position) {
+		// The user selected a menu item from the MenuFragment
 
-        if (selectedFrag != null) {
-            // If selected frag is available, we're in two-pane layout...
+		// Capture the selected fragment from the activity layout
+		SelectedFragment selectedFrag = (SelectedFragment)
+				getSupportFragmentManager().findFragmentById(R.id.selected_fragment);
 
-            // Call a method in the SelectedFragment to update its content
-            selectedFrag.updateSelectedView(position);
+		if (selectedFrag != null) {
+			// If selected frag is available, we're in two-pane layout...
 
-        } else {
-            // If the frag is not available, we're in the one-pane layout and must swap frags...
+			// Call a method in the SelectedFragment to update its content
+			selectedFrag.updateSelectedView(position);
 
-            // Create fragment and give it an argument for the selected article
-            SelectedFragment newFragment = new SelectedFragment();
-            Bundle args = new Bundle();
-            args.putInt(SelectedFragment.ARG_POSITION, position);
-            newFragment.setArguments(args);
-            FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+		} else {
+			// If the frag is not available, we're in the one-pane layout and must swap frags...
 
-            // Replace whatever is in the fragment_container view with this fragment,
-            // and add the transaction to the back stack so the user can navigate back
-            transaction.replace(R.id.fragment_container, newFragment);
-            transaction.addToBackStack(null);
+			// Create fragment and give it an argument for the selected article
+			SelectedFragment newFragment = new SelectedFragment();
+			Bundle args = new Bundle();
+			args.putInt(SelectedFragment.ARG_POSITION, position);
+			newFragment.setArguments(args);
+			FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
 
-            // Commit the transaction
-            transaction.commit();
-        }
-    }
+			// Replace whatever is in the fragment_container view with this fragment,
+			// and add the transaction to the back stack so the user can navigate back
+			transaction.replace(R.id.fragment_container, newFragment);
+			transaction.addToBackStack(null);
+
+			// Commit the transaction
+			transaction.commit();
+		}
+	}
 }
