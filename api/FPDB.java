@@ -27,24 +27,30 @@ public class FPDB
     public Reply<IOUReply> IOUGet() throws FPDBException
     {
         String reply = httpGet(url + "&action=iou_get");
-        return new Reply<IOUReply>(reply, new IOUReplyFactory());
+        return new Reply<IOUReply>(reply, new IOUReplyFactory(), "iou_get");
     }
 
     public Reply<IOUUserReply> IOUUserGet() throws FPDBException
     {
         String reply = httpGet(url + "&action=iou_get_all");
-        return new Reply<IOUUserReply>(reply, new IOUUserReplyFactory());
+        return new Reply<IOUUserReply>(reply, new IOUUserReplyFactory(), "iou_get_all");
     }
 
     public Reply<InventoryReply> inventoryGet() throws FPDBException
     {
         String reply = httpGet(url + "&action=inventory_get_all");
-        return new Reply<InventoryReply>(reply, new InventoryReplyFactory());
+        return new Reply<InventoryReply>(reply, new InventoryReplyFactory(), "inventory_get_all");
     }
 
     public Reply<PurchasesReply> purchasesGet() throws FPDBException
     {
         String reply = httpGet(url + "&action=purchases_get_all");
-        return new Reply<PurchasesReply>(reply, new PurchasesReplyFactory());
+        return new Reply<PurchasesReply>(reply, new PurchasesReplyFactory(), "purchases_get_all");
+    }
+
+    public Reply<EmptyReply> purchasesAppend(int beer_id) throws FPDBException
+    {
+        String reply = httpGet(url + "&action=purchases_append&beer_id=" + beer_id);
+        return new Reply<EmptyReply>(reply, new EmptyReplyFactory(), "empty");
     }
 }

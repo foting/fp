@@ -17,11 +17,16 @@ public class Reply<T> implements Iterable<T>
 {
     private LinkedList<T> payload;
 
-    public Reply(String reply, ReplyFactory<T> factory) throws FPDBException
+    public Reply(String reply, ReplyFactory<T> factory, String expected_type) throws FPDBException
     {
         payload = new LinkedList<T>();
         try {
             JSONObject jobj = new JSONObject(new JSONTokener(reply));
+
+            String type = jobj.getString("type");
+            if (!type.equals(expected_type)) {
+                throw new FPDBException("Back-end protocol error");
+            }
 
             JSONArray jarr = jobj.getJSONArray("payload");
             for (int i = 0; i < jarr.length(); i++) {
