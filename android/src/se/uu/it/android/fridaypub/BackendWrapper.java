@@ -32,7 +32,7 @@ public class BackendWrapper {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			return null;
+			return reply;
 		}
 
 		/** The system calls this to perform work in the UI thread and delivers
