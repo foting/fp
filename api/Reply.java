@@ -13,7 +13,7 @@ interface ReplyFactory<T>
     public T create(JSONObject jobj) throws JSONException;
 }
 
-class Reply<T> implements Iterable<T>
+public class Reply<T> implements Iterable<T>
 {
     private LinkedList<T> payload;
 
