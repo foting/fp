@@ -19,25 +19,25 @@ package se.uu.it.android.fridaypub;
 public class Ipsum {
 
     static String[] MenuItems = {
-        "Starting Point",
-    	"View Inventory",
-        "View Bank",
-        "Accept Payment",
-        "Buy Beer",
-        "Restock",
-        "Add User",
-        "Credentials"
+        "Starting Point",	// 0
+        "View Bank",		// 1
+        "View Inventory",	// 2
+        "Buy Beer",			// 3
+        "Purchase History",	// 4
+        "Accept Payment",	// 5
+        "Restock",			// 6
+        "Add User"			// 7
     };
 
     static String[] Views = {
         "Starting Point view\n\nThis is where you end up when starting, should implement login-view if no user is saved, "+
         		"otherwise show if the pub is open and some statistics or whatever.\n\n",
-    	"Inventory view\n\nThis view shows the inventory.\n\n",
         "Bank view\n\nThis view shows the bank.\n\n",
-        "Payment view\n\nThis view is for registering payments.\n\n",
+    	"Inventory view\n\nThis view shows the inventory.\n\n",
         "Buy Beer view\n\nThis view is for registering bought beer.\n\n",
+        "Purchase History view\n\n",
+        "Payment view\n\nThis view is for registering payments.\n\n",
         "Restock view\n\nThis view is for updating the stock of beer.\n\n",
-        "Add User view\n\nThis view is for adding new users to the pub.\n\n",
-        "User Credentials\n\nThis view provides the ability to set the username and password for the FPDB queries.\n\n"
+        "Add User view\n\nThis view is for adding new users to the pub.\n\n"
     };
 }

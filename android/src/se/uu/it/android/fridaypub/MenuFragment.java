@@ -26,10 +26,10 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 public class MenuFragment extends ListFragment {
-    OnHeadlineSelectedListener mCallback;
+    OnMenuSelectedListener mCallback;
 
     // The container Activity must implement this interface so the frag can deliver messages
-    public interface OnHeadlineSelectedListener {
+    public interface OnMenuSelectedListener {
         /** Called by HeadlinesFragment when a list item is selected */
         public void onMenuSelected(int position);
     }
@@ -64,10 +64,10 @@ public class MenuFragment extends ListFragment {
         // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception.
         try {
-            mCallback = (OnHeadlineSelectedListener) activity;
+            mCallback = (OnMenuSelectedListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
-                    + " must implement OnHeadlineSelectedListener");
+                    + " must implement OnMenuSelectedListener");
         }
     }
 
