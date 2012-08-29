@@ -143,7 +143,15 @@
             if (!$results) {
                 throw new FPDB_Exception(sql_error($this->link) . ": " . $query);
             }
-            return new FPDB_Results($results);
+
+            /* Test whether the query returned a result, if
+             * so return it to caller otherwise return null.
+             */
+            if (is_resource($results)) {
+                return new FPDB_Results($results);
+            } else {
+                return NULL;
+            }
         }
     };
 
