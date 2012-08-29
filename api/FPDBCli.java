@@ -17,7 +17,6 @@ class FPDBCli
 
     private static void print_iou(Reply<IOUReply> reply)
     {
-        System.out.println("== IOU ==");
         for (IOUReply i : reply) {
         	System.out.println("Username: " + i.username);
         	System.out.println("First name: " + i.first_name);
@@ -35,6 +34,18 @@ class FPDBCli
     {
     }
 
+    
+    private static void print_payments(Reply<PaymentsReply> reply)
+    {
+        for (PaymentsReply i : reply) {
+        	System.out.println("User ID: " + i.user_id);
+        	System.out.println("Admin ID: " + i.admin_id);
+        	System.out.println("amount: " + i.amount);
+            System.out.println("");
+        }
+ 
+    }
+
     private static void do_action() throws FPDBException
     {
         FPDB fpdb = new FPDB(url, username, password);
@@ -45,6 +56,8 @@ class FPDBCli
             print_inventory(fpdb.inventoryGet());
         } else if (action.equals("purchases")) {
             print_purchases(fpdb.purchasesGet());
+        } else if (action.equals("payments")) {
+            print_payments(fpdb.paymentsGet());
         } else {
             exit("Error: Unknown action");
         }
@@ -52,12 +65,14 @@ class FPDBCli
 
     public static void main(String argv[])
     {
+        /*
         if (argv.length != 3) {
             exit("Usage: FPDBCli <username> <password> <action>");
         }
-        username = argv[0];
-        password = argv[1];
-        action = argv[2];
+        */
+        username = "gurra"; //argv[0];
+        password = "gurra"; //argv[1];
+        action = "payments"; //argv[2];
 
         try {
             do_action();

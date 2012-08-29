@@ -79,6 +79,7 @@
         return new API_Reply("inventory_get", $qres);
     }
 
+
     function action_purchases_get($db, $user_id)
     {
         $qres = $db->purchases_get($user_id)->get_array();
@@ -101,6 +102,32 @@
         return new API_Reply("empty");
     }
 
+    
+    function action_payments_get($db, $user_id)
+    {
+        $qres = $db->payments_get($user_id)->get_array();
+        return new API_Reply("payments_get_all", $qres);
+    }
+
+    function action_payments_get_all($db, $user_id)
+    {
+        $qres = $db->payments_get_all()->get_array();
+        return new API_Reply("payments_get_all", $qres);
+    }
+
+    function action_payments_append($db, $admin_id)
+    {
+        $user_id = $_GET["user_id"];
+        $amount  = $_GET["amount"];
+        if (!$user_id || !$amount) {
+            return_error(ERROR_ARGUMENTS);
+        }
+        /* XXX We might want to check if the supplied user_id is valid */
+        $db->payments_append($user_id, $admin_id, $amount);
+        return new API_Reply("empty");
+    }
+
+
     function action_iou_get($db, $user_id)
     {
         $qres = $db->iou_get($user_id)->get_array();
@@ -112,6 +139,7 @@
         $qres = $db->iou_get_all()->get_array();
         return new API_Reply("iou_get_all", $qres);
     }
+
 
     $username = $_GET["username"];
     $password = $_GET["password"];
@@ -175,6 +203,21 @@
             case "purchases_append":
                 check_credentials($cred, CRED_USER);
                 $reply = action_purchases_append($db, $user);
+                break;
+
+            case "payments_get":
+                check_credentials($cred, CRED_USER);
+                $reply = action_payments_get($db, $user);
+                break;
+
+            case "payments_get_all":
+                check_credentials($cred, CRED_ADMIN);
+                $reply = action_payments_get_all($db, $user);
+                break;
+
+            case "payments_append";
+                check_credentials($cred, CRED_USER);
+                $reply = action_payments_append($db, $user);
                 break;
 
             case "iou_get":

@@ -294,13 +294,13 @@
         }
 
 
-        public function payment_get($user_id)
+        public function payments_get($user_id)
         {
             $q = sprintf("SELECT * FROM payments WHERE user_id = '%s'", $user_id);
             return $this->query($q);
         }
 
-        public function payment_get_all()
+        public function payments_get_all()
         {
             return $this->query("SELECT * FROM payments");
         }
@@ -344,7 +344,7 @@
             $this->query($q);
         }
 
-        public function payment_append($user_id, $admin_id, $amount)
+        public function payments_append($user_id, $admin_id, $amount)
         {
             $q = sprintf("INSERT INTO payments
                          (user_id, admin_id, amount)
