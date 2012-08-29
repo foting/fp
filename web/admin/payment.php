@@ -34,7 +34,7 @@
         extract($_POST);
 
         try {
-            $db->payment_append($user_id, $admin_id, $amount);
+            $db->payments_append($user_id, $admin_id, $amount);
         } catch (FPDB_Exception $e) {
             die($e->getMessage());
         }
