@@ -57,7 +57,7 @@
         extract($_POST);
 
         try {
-            $db->purchase_append($user_id, $beer_id);
+            $db->purchases_append($user_id, $beer_id);
         } catch (FPDB_Exception $e) {
             die($e->getMessage());
         }

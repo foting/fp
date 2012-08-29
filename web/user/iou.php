@@ -24,7 +24,7 @@
     function getPayments($db, $user_id) {
         $qres;
             try {
-            $qres = $db->payment_get($user_id);
+            $qres = $db->payments_get($user_id);
         } catch (FPDB_Exception $e) {
             die($e->getMessage());
         }

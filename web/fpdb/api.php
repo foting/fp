@@ -98,7 +98,7 @@
         if (!$beer_id) {
             return_error(ERROR_ARGUMENTS);
         }
-        $db->purchase_append($user_id, $beer_id);
+        $db->purchases_append($user_id, $beer_id);
         return new API_Reply("empty");
     }
 
