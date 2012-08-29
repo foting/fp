@@ -63,8 +63,10 @@
                 foreach ($record as $key => $val) {
                     $json .= "\"$key\" : \"$val\",";
                 }
+                $json = rtrim($json, ",");
                 $json .= "},";
             }
+            $json = rtrim($json, ",");
             $json .= "]}";
             return $json;
         }
