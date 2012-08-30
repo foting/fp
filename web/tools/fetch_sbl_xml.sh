@@ -14,9 +14,6 @@ function print_and_exit {
 wget $URL -O $XML_FILE
 [ "$?" == "0" ] || print_and_exit "wget"
 
-rm sbl-latest.xml
+rm sbl-latest.xml 2>/dev/null
 ln -s $XML_FILE sbl-latest.xml
-
-sed -e "s#\(<[^>]*>\)#\1\n#g" -i $XML_FILE
-[ "$?" == "0" ] || print_and_exit "sed"
 
