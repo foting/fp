@@ -27,6 +27,7 @@ class HttpGet
         } finally {
             if (br != null) {
                 br.close(); //XXX Does this close sr?
+                sr.close(); //XXX No, this does.
             }
         }
 
