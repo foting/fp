@@ -12,10 +12,11 @@
 <!DOCTYPE HTML>
 <html>
     <head>
+    	<meta charset="UTF-8">
     	<link rel="stylesheet" href="../css/friday_pub.css">
     	<link href='http://fonts.googleapis.com/css?family=Fredoka+One' rel='stylesheet' type='text/css'>
-	
-        <title>FridayPub Admin's Area</title>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
+        <title>FridayPub Banks of Bros's</title>
     </head>
     <body>
     <?php 
@@ -24,13 +25,13 @@
             die("BUG: Non-admin user is accessing admin area");
         }
     ?>
-        <h1>FridayPub Admin</h1>
+        <h1>FridayPub Bank</h1>
         <div class="logout">Logged in as:
             <?php echo $_SESSION["username"]; ?>
         	<a href="../common/logout.php">(logout)</a>
         </div>
         <ul class="menu">
-            <li><a href="../admin/inventory.php">INVENTORY</a></li>
+            <li><a href="../admin/inventory.php">OUR BEERS BRO</a></li>
             <li><a href="../admin/iou.php">UR BANK BRO</a></li>
             <li><a href="../admin/payment.php">U PAY UP BRO</a></li>
             <li><a href="../admin/purchase.php">U BUY BRO</a></li>

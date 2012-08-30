@@ -12,7 +12,7 @@
     $error_strings = array(
             ERROR_USERNAME  => "Username not found",
             ERROR_PASSWORD  => "Wrong password (your fucked)",
-            ERROR_CRED      => "Not enough credentails",
+            ERROR_CRED      => "Not enough credentials",
             ERROR_DATABASE  => "Database error",
             ERROR_ACTION    => "Unknown action requested",
             ERROR_ARGUMENTS => "Wrong number or type of arguments",
@@ -81,6 +81,11 @@
         return new API_Reply("inventory_get", $qres);
     }
 
+    function action_beer_data_get($db, $beer_id)
+    {
+        $qres = $db->beer_data_get($beer_id)->get_array();
+        return new API_Reply("beer_data_get", $qres);
+    }
 
     function action_purchases_get($db, $user_id)
     {
@@ -171,7 +176,7 @@
 
     /* Reconnect to database with correct credentials */
     try {
-        if ($credentials == CRED_ADMIN) {
+        if ($cred == CRED_ADMIN) {
             unset($db); /* Close connection */
             $db = new FPDB_Admin();
         }
@@ -230,6 +235,11 @@
             case "iou_get_all":
                 check_credentials($cred, CRED_ADMIN);
                 $reply = action_iou_get_all($db, $user);
+                break;
+            case "beer_data_get":
+                //currently not used. Need to think about password passing in javascript
+                check_credentials($cred, CRED_USER);
+                $reply = action_beer_data_get($db, $_GET["beer_id"]);
                 break;
 
             default:

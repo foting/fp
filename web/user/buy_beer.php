@@ -18,11 +18,12 @@
     printf("<form action=\"%s\" method=\"post\">", $_SERVER["PHP_SELF"]);
     foreach ($qres as $inventory_item) {
         $beer_name = $inventory_item["namn"];
+        $beer_name .= " ".$inventory_item["namn2"];
         $beer_id = $inventory_item["beer_id"];
-        $beer_price = $inventory_item["price"];
+        $beer_price = $inventory_item["price"] ;
         $beer_count = $inventory_item["count"];
-
-        printf("<input id=\"$beer_id\" type=\"radio\" name=\"beer_id\" value=%d><label for=\"$beer_id\"> %s, %d kr (%d kvar)</label></br>", 
+        if ($beer_count > 0)
+            printf("<input id=\"$beer_id\" type=\"radio\" name=\"beer_id\" value=%d><label for=\"$beer_id\"> %s, %d kr (%d kvar)</label></br>", 
             $beer_id, $beer_name, $beer_price, $beer_count);
     }
     printf("<input class=\"login\" type=\"submit\" name=\"submit\" value=\"BUY!\"/>");

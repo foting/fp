@@ -10,19 +10,13 @@
 ?>
 
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
-    <table>
-        <tr>
-            <td> beer_id </td>
-            <td> amount </td>
-            <td> price </td>
-        </tr>
-        <tr>
-            <td><input type="text" required="required" name="beer_id"/></td>
-            <td><input type="text" required="required" name="amount"/></td>
-            <td><input type="text" required="required" name="price"/></td>
-            <td><input type="submit" name="submit" value="Register"/></td>
-        </tr>
-    </table>
+
+        <div>
+            <input class="beer_id" id="bid" type="text" required="required" name="beer_id" placeholder="Beer ID"/>
+            <span id="name"></span>
+            <input class="beer_amount" type="text" required="required" name="amount" placeholder="Amount"/>
+            <input type="submit" name="submit" value="Register"/>
+        </div>
 </form>
 
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
@@ -30,6 +24,16 @@
     <input type="submit" name="submit_sbl" value="update"/>
 </form>
 
+<script type="text/javascript">
+	$(".beer_amount").blur(function () {
+		//create next line
+		
+		});
+	$(".beer_id").blur(function () {
+		$("#name").load("load_beer_name.php?beer_id=" + $("#bid").val());
+		
+		});
+</script>
 <?php
     if (isset($_POST["submit"])) {
         $user_id = $_SESSION["user_id"];

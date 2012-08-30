@@ -299,11 +299,23 @@ th {
 }
 
 ::-webkit-input-placeholder {
-   color: red;
+   color: #f092a5;
 }
 
 :-moz-placeholder {  
    color: #f092a5;  
+}
+
+input.beer_id {
+	width:5em;
+}
+
+input.beer_amount {
+	width:2em;
+}
+
+input.beer_price {
+	width:3em;
 }
 
 /**

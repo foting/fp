@@ -38,9 +38,9 @@
         return new SQL_result(mysqli_query($sql_link->link, $query));
     }
 
-    function sql_fetch_assoc($sql_results)
+    function sql_fetch_assoc($sql_result)
     {
-        return mysqli_fetch_assoc($sql_results->result);
+        return mysqli_fetch_assoc($sql_result->result);
     }
     
     if (!function_exists("mysqli_connect")) {

@@ -123,8 +123,9 @@
             ON BEERS.beer_id = sbl_beer.nr) AS NAMED
 		LEFT JOIN
 			beers_bought
-		ON beers_bought.beer_id = NAMED.beer_id";
-
+		ON beers_bought.beer_id = NAMED.beer_id
+		GROUP BY beer_id ORDER BY count DESC";
+	    
     	protected $iou_q = "
 			SELECT users.user_id, first_name, last_name, assets FROM users RIGHT JOIN (
                 SELECT user_id, SUM(assets) AS assets FROM (
@@ -224,7 +225,7 @@
 
         public function user_get_all()
         {
-            return $this->query("SELECT * FROM users");
+            return $this->query("SELECT * FROM users ORDER BY first_name");
         }
 
 
@@ -267,7 +268,16 @@
             return $this->query($this->inventory_q);
         }
 
+        public function beer_data_get($beer_id)
+        {
+            return $this->query(sprintf("SELECT * FROM sbl_beer WHERE nr = %s", $beer_id));
+        }
 
+        public function beer_data_get_all()
+        {
+            return $this->query("SELECT nr, namn, prisinklmoms FROM sbl_beer");
+        }
+        
         public function iou_get($user_id)
         {
             $q = sprintf($this->iou_q, $user_id);

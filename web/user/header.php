@@ -10,9 +10,9 @@
 <!DOCTYPE HTML>
 <html>
     <head>
+    	<meta charset="UTF-8">
     	<link rel="stylesheet" href="../css/friday_pub.css">
     	<link href='http://fonts.googleapis.com/css?family=Fredoka+One' rel='stylesheet' type='text/css'>
-	
         <title>FridayPub</title>
     </head>
     <body>

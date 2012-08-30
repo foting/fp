@@ -10,12 +10,12 @@
 ?>
 
 <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
-    <p>Username:   <input type="text" required="required" name="username" /></p>
-    <p>First name: <input type="text" required="required" name="first_name" /></p>
-    <p>Last name:  <input type="text" required="required" name="last_name"  /></p>
-    <p>Email:      <input type="text" required="required" name="email"      /></p>
-    <p>Phone:      <input type="text" required="required" name="phone"      /></p>
-    <p>Password:   <input type="text" required="required" name="password"   /></p>
+    <p><input type="text" required="required" name="username" placeholder="User name"/></p>
+    <p><input type="text" required="required" name="first_name" placeholder="First name"/></p>
+    <p><input type="text" required="required" name="last_name" placeholder="Family name"/></p>
+    <p><input type="email" required="required" name="email" placeholder="Email"/></p>
+    <p><input type="tel" required="required" name="phone" pattern="[+0-9\-]*" placeholder="Phone"/></p>
+    <p><input type="password" required="required" name="password" placeholder="Password"/></p>
     <p><input type="submit" name="submit" value="Register"/></p>
 </form>
 
