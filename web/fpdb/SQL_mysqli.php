@@ -35,7 +35,12 @@
 
     function sql_query($sql_link, $query)
     {
-        return new SQL_result(mysqli_query($sql_link->link, $query));
+        $r = mysqli_query($sql_link->link, $query);
+        if ($r) {
+            return new SQL_result($r);
+        } else {
+            return False;
+        }
     }
 
     function sql_fetch_assoc($sql_result)
