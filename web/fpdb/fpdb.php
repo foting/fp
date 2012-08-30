@@ -1,57 +1,12 @@
 <?php
 
     include_once "../include/credentials.php";
-
-    /* Not all server at uni supports mysqli hence these wrappers */
-    function sql_connect($server, $username, $password, $database)
-    {
-        if (function_exists("mysqli_connect")) {
-            return  mysqli_connect($server, $username, $password, $database);
-        } else {
-            $link = mysql_connect($server, $username, $password);
-            if (!$link || !mysql_select_db($database)) {
-                return False;
-            }
-            return $link;
-        }
+    try {
+        include_once "SQL_mysqli.php";    
+    } catch (Exception $e) {
+        die($e);
     }
-
-    function sql_close($link)
-    {
-        if (function_exists("mysqli_error")) {
-            return mysqli_close($link);
-        } else {
-            return mysql_close();
-        }
-    }
-
-    function sql_error($link)
-    {
-        if (function_exists("mysqli_error")) {
-            return mysqli_error($link);
-        } else {
-            return mysql_error();
-        }
-    }
-
-    function sql_query($link, $query)
-    {
-        if (function_exists("mysqli_query")) {
-            return mysqli_query($link, $query);
-        } else {
-            return mysql_query($query);
-        }
-    }
-
-    function sql_fetch_assoc($results)
-    {
-        if (function_exists("mysqli_fetch_assoc")) {
-            return mysqli_fetch_assoc($results);
-        } else {
-            return mysql_fetch_assoc($results);
-        }
-    }
-
+    
 
     class FPDB_Exception extends Exception {
 
@@ -143,15 +98,8 @@
             if (!$results) {
                 throw new FPDB_Exception(sql_error($this->link) . ": " . $query);
             }
-
-            /* Test whether the query returned a result, if
-             * so return it to caller otherwise return null.
-             */
-            if (is_resource($results)) {
-                return new FPDB_Results($results);
-            } else {
-                return NULL;
-            }
+            
+            return new FPDB_Results($results);
         }
     };
 
