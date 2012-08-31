@@ -330,7 +330,10 @@
 
     	public function sbl_append($beer)
         {
-            $q = "INSERT INTO sbl_beer (
+            /* Systembolaget sometimes have a few duplicates in their XML file.
+             * Therefore, we use REPLACE instead of INSERT to not insert
+             *duplicates. */
+            $q = "REPLACE INTO sbl_beer (
                     nr,
                     Artikelid,
                     Varnummer,
