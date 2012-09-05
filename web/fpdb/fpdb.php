@@ -390,12 +390,12 @@
 
         public function sbl_nuke()
         {
-            $this->insert("TRUNCATE TABLE sbl_beer");
-	}
+            $this->query("TRUNCATE TABLE sbl_beer");
+	    }
 	
-	public function pub_price($sbl_price) {
-	    return (floor(($sbl_price + 1.0) / 5) + 1) * 5;
-	}
+	    public function pub_price($sbl_price) {
+	        return (floor(($sbl_price + 1.0) / 5) + 1) * 5;
+	    }   
     };
 
     /* Temporarily putting this functionality here */
