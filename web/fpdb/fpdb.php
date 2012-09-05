@@ -131,84 +131,57 @@
 		GROUP BY beer_id ORDER BY count DESC";
 	    
     	protected $iou_q = "
-			SELECT users.user_id, first_name, last_name, assets FROM users RIGHT JOIN (
-                SELECT user_id, SUM(assets) AS assets FROM (
-                    SELECT user_id, SUM(amount) AS assets
-                            FROM payments GROUP BY user_id
-                    UNION
-                    SELECT user_id, -SUM(price) FROM (
-                            SELECT * FROM (
-                                SELECT
-                                    beers_sold.user_id,
-                                    beers_sold.transaction_id,
-                                    beers_bought.price #,
-                                FROM beers_sold LEFT JOIN beers_bought
-                                    ON beers_bought.beer_id = beers_sold.beer_id
-                                    WHERE beers_sold.timestamp > beers_bought.timestamp
-                                    ORDER BY beers_bought.timestamp DESC
-                                ) AS T
-                            GROUP BY T.transaction_id
-                    ) AS S GROUP BY user_id
-                ) AS TOTAL_ASSETS GROUP BY user_id
-            ) AS DEBT_LIST
-            ON users.user_id = DEBT_LIST.user_id
-            WHERE DEBT_LIST.user_id='%s'";
-    	    
-	    protected $iou_all_q = "
-	        SELECT username, first_name, last_name, assets FROM users RIGHT JOIN (
-                SELECT user_id, SUM(assets) AS assets FROM (
-                    SELECT user_id, SUM(amount) AS assets
-                            FROM payments GROUP BY user_id
-                    UNION
-                    SELECT user_id, -SUM(price) FROM (
-                            SELECT * FROM (
-                                SELECT
-                                    beers_sold.user_id,
-                                    beers_sold.transaction_id,
-                                    beers_bought.price #,
-                                FROM beers_sold LEFT JOIN beers_bought
-                                    ON beers_bought.beer_id = beers_sold.beer_id
-                                    WHERE beers_sold.timestamp > beers_bought.timestamp
-                                    ORDER BY beers_bought.timestamp DESC
-                                ) AS T
-                            GROUP BY T.transaction_id
-                    ) AS S GROUP BY user_id
-                ) AS TOTAL_ASSETS GROUP BY user_id
-            ) AS DEBT_LIST
-            ON users.user_id = DEBT_LIST.user_id
+            SELECT
+                transactions.user_id     AS user_id,
+                transactions.first_name  AS first_name,
+                transactions.last_name   AS last_name,
+                SUM(transactions.amount) AS assets
+            FROM
+                (SELECT
+                    sales_price.user_id     AS user_id,
+                    sales_price.first_name  AS first_name,
+                    sales_price.last_name   AS last_name,
+                    -SUM(sales_price.price) AS amount
+                FROM
+                    sales_price
+                GROUP BY
+                    sales_price.user_id
+                UNION ALL
+                SELECT
+                    payments.user_id     AS user_id,
+                    null                 AS first_name,
+                    null                 AS last_name,
+                    SUM(payments.amount) AS amount
+                FROM
+                    payments
+                GROUP BY
+                    payments.user_id
+                 ) AS transactions
+            WHERE
+                transactions.user_id LIKE %s
+            GROUP BY
+                transactions.user_id
             ORDER BY assets ASC";
 
 	    protected $purchase_history_q = "
-    		SELECT namn, Purchases.* FROM
-            	sbl_beer
-            RIGHT JOIN (
-            	SELECT * FROM (
-            		SELECT
-            			beers_sold.*,
-            			beers_bought.price
-            		FROM beers_sold LEFT JOIN beers_bought
-            		ON beers_bought.beer_id = beers_sold.beer_id
-            		WHERE beers_sold.timestamp > beers_bought.timestamp
-            		ORDER BY beers_bought.timestamp DESC
-                ) AS T WHERE T.user_id = %s
-        		GROUP BY T.transaction_id ORDER BY T.timestamp DESC) AS Purchases
-    		ON Purchases.beer_id = sbl_beer.nr";
-	            
-        protected $purchase_history_all_q = "
-        	SELECT namn, Purchases.* FROM
-            	sbl_beer
-            RIGHT JOIN (
-        	SELECT * FROM (
-        		SELECT
-        			beers_sold.*,
-        			beers_bought.price
-        		FROM beers_sold LEFT JOIN beers_bought
-        		ON beers_bought.beer_id = beers_sold.beer_id
-        		WHERE beers_sold.timestamp > beers_bought.timestamp
-        		ORDER BY beers_bought.timestamp DESC
-            ) AS T
-    		GROUP BY T.transaction_id ORDER BY T.timestamp) AS Purchases
-    		ON Purchases.beer_id = sbl_beer.nr";
+            SELECT
+                concat(sbl_beer.namn, ' ', sbl_beer.namn2) AS name,
+                beers_sold.transaction_id,
+                beers_sold.user_id,
+                beers_sold.beer_id,
+                beers_sold.timestamp,
+                sales_price.price
+            FROM
+                beers_sold,
+                sales_price,
+                sbl_beer
+            WHERE
+                beers_sold.transaction_id = sales_price.transaction_id and
+                sales_price.beer_id = sbl_beer.nr and
+                beers_sold.user_id LIKE %s
+            ORDER BY
+                beers_sold.timestamp DESC";
+
         
         function __construct()
         {
@@ -241,7 +214,8 @@
 
         public function purchases_get_all()
         {            
-            return $this->select($this->purchase_history_all_q);
+            $q = sprintf($this->purchase_history_q, "'%'");
+            return $this->select($q);
         }
 
         /* Only *_append method exposed to users */
@@ -290,7 +264,8 @@
 
         public function iou_get_all()
         {
-            return $this->select($this->iou_all_q);
+            $q = sprintf($this->iou_q, "'%'");
+            return $this->select($q);
 	    }
     };
 
