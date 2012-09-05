@@ -1,28 +1,19 @@
 <?php
 
     include_once "../include/credentials.php";
-    try {
-        include_once "SQL_mysqli.php";    
-    } catch (Exception $e) {
-        die($e);
-    }
-    
 
     class FPDB_Exception extends Exception {
 
     }
 
-    class FPDB_Results implements Iterator
+    class FPDB_Result implements Iterator
     {
         private $results_array;
         private $position;
 
-        function  __construct($sql_results)
+        function  __construct($pdo_results)
         {
-            $this->results_array = array();
-            while ($iter = sql_fetch_assoc($sql_results)) {
-                array_push($this->results_array, $iter);
-            }
+            $this->results_array = $pdo_results;
             $this->position = 0;
         }
 
@@ -61,9 +52,7 @@
 
     class FPDB_Base
     {
-        private $link = False;
-        private $query_ = False;
-        private $result_ = False;
+        private $dbh = null;
         private $position = 0;
 
         function __construct($dbn)
@@ -75,31 +64,46 @@
 
         function __destruct()
         {
-            sql_close($this->link);
+            $this->dbh = null;
         }
 
-        public function connect($dbn)
+        protected function connect($dbn)
         {
-            if ($this->link) {
+            if ($this->dbh) {
                 throw new FPDB_Exception("Error: FPDB_Base: Already connected.");
             }
+            extract($dbn);
 
-            $this->link = sql_connect(
-                $dbn["server"], $dbn["username"], $dbn["password"], $dbn["database"]);
-
-            if (!$this->link) {
-                throw new FPDB_Exception(sql_error($this->link));
+            try {
+                $this->dbh = new PDO("mysql:dbname=$database;host=$server", $username, $password);
+                $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            } catch (PDOException $e) {
+                throw new FPDB_Exception($e->getMessage);
             }
         }
 
-        public function query($query)
+        private function execute($query)
         {
-            $results = sql_query($this->link, $query);
-            if (!$results) {
-                throw new FPDB_Exception(sql_error($this->link) . ": " . $query);
+            try {
+                $sth = $this->dbh->prepare($query);
+                $sth->execute();
+            } catch (PDOException $e) {
+                throw new FPDB_Exception($e->getMessage());
             }
-            
-            return new FPDB_Results($results);
+            return $sth;
+        }
+
+        public function select($query)
+        {
+            $sth = $this->execute($query);
+            $res = $sth->fetchAll(PDO::FETCH_ASSOC);
+            return new FPDB_Result($res);
+        }
+
+        public function insert($query)
+        {
+            $this->execute($query);
+            return new FPDB_Results(array());
         }
     };
 
@@ -220,24 +224,24 @@
         {
             /* Assuming that username is unique */
             $q = sprintf("SELECT * FROM users WHERE username = '%s'", $username);
-            return $this->query($q);
+            return $this->select($q);
         }
 
         public function user_get_all()
         {
-            return $this->query("SELECT * FROM users ORDER BY first_name");
+            return $this->select("SELECT * FROM users ORDER BY first_name");
         }
 
 
         public function purchases_get($user_id)
         {
             $q = sprintf($this->purchase_history_q, $user_id);
-            return $this->query($q);
+            return $this->select($q);
         }
 
         public function purchases_get_all()
         {            
-            return $this->query($this->purchase_history_all_q);
+            return $this->select($this->purchase_history_all_q);
         }
 
         /* Only *_append method exposed to users */
@@ -247,46 +251,46 @@
                           (user_id, beer_id)
                           VALUES ('%d', '%d')",
                           $user_id, $beer_id);
-            $this->query($q);
+            $this->insert($q);
         }
 
 
         public function payments_get($user_id)
         {
             $q = sprintf("SELECT * FROM payments WHERE user_id = '%s'", $user_id);
-            return $this->query($q);
+            return $this->select($q);
         }
 
         public function payments_get_all()
         {
-            return $this->query("SELECT * FROM payments");
+            return $this->select("SELECT * FROM payments");
         }
 
 
         public function inventory_get_all()
         {
-            return $this->query($this->inventory_q);
+            return $this->select($this->inventory_q);
         }
 
         public function beer_data_get($beer_id)
         {
-            return $this->query(sprintf("SELECT * FROM sbl_beer WHERE nr = %s", $beer_id));
+            return $this->select(sprintf("SELECT * FROM sbl_beer WHERE nr = %s", $beer_id));
         }
 
         public function beer_data_get_all()
         {
-            return $this->query("SELECT nr, namn, prisinklmoms FROM sbl_beer");
+            return $this->select("SELECT nr, namn, prisinklmoms FROM sbl_beer");
         }
         
         public function iou_get($user_id)
         {
             $q = sprintf($this->iou_q, $user_id);
-            return $this->query($q);
+            return $this->select($q);
 	    }
 
         public function iou_get_all()
         {
-            return $this->query($this->iou_all_q);
+            return $this->select($this->iou_all_q);
 	    }
     };
 
@@ -307,7 +311,7 @@
                  (credentials, password, username, first_name, last_name, email, phone)
                  VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s')",
                  CRED_USER, md5($password), $username, $first_name, $last_name, $email, $phone);
-            $this->query($q);
+            $this->insert($q);
         }
 
         public function payments_append($user_id, $admin_id, $amount)
@@ -316,7 +320,7 @@
                          (user_id, admin_id, amount)
                          VALUES ('%d', '%d', '%d')",
                          $user_id, $admin_id, $amount);
-            $this->query($q);
+            $this->insert($q);
         }
 
         public function inventory_append($user_id, $beer_id, $amount, $price)
@@ -325,7 +329,7 @@
                           (admin_id, beer_id, amount, price)
                           VALUES ('%d', '%d', '%d', '%.2f')",
                           $user_id, $beer_id, $amount, $price);
-            $this->query($q);
+            $this->insert($q);
         }
 
     	public function sbl_append($beer)
@@ -381,12 +385,12 @@
                     \"$beer->Koscher\"
                 )";
 
-            $this->query($q);
+            $this->insert($q);
         }
 
         public function sbl_nuke()
         {
-            $this->query("TRUNCATE TABLE sbl_beer");
+            $this->insert("TRUNCATE TABLE sbl_beer");
 	}
 	
 	public function pub_price($sbl_price) {
