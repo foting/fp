@@ -82,27 +82,27 @@
             }
         }
 
-        private function execute($query)
+        private function execute($query, $param)
         {
             try {
                 $sth = $this->dbh->prepare($query);
-                $sth->execute();
+                $sth->execute($param);
             } catch (PDOException $e) {
                 throw new FPDB_Exception($e->getMessage());
             }
             return $sth;
         }
 
-        public function select($query)
+        public function select($query, $param = array())
         {
-            $sth = $this->execute($query);
+            $sth = $this->execute($query, $param);
             $res = $sth->fetchAll(PDO::FETCH_ASSOC);
             return new FPDB_Result($res);
         }
 
-        public function insert($query)
+        public function insert($query, $param = array())
         {
-            $this->execute($query);
+            $this->execute($query, $param);
             return new FPDB_Results(array());
         }
     };
@@ -169,6 +169,8 @@
                 GROUP BY
                     pa.user_id
                  ) AS tr
+            WHERE
+                tr.user_id LIKE %s
             GROUP BY
                 tr.user_id
             ORDER BY
@@ -188,7 +190,8 @@
                 sbl_beer    AS sb
             WHERE
                 bs.transaction_id = sp.transaction_id and
-                sp.beer_id = sb.nr";
+                sp.beer_id = sb.nr and
+                bs.user_id LIKE %s";
 
         
         function __construct()
