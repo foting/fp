@@ -40,7 +40,7 @@
         foreach ($qres as $purchase)
         {
             $p_table .= sprintf("<tr><th>%s</th><td>%s (%d)</td><td class=\"right\">%d kr</td></tr>",
-                $purchase["timestamp"], $purchase["namn"], $purchase["beer_id"], $purchase["price"]);
+                $purchase["timestamp"], $purchase["name"], $purchase["beer_id"], $purchase["price"]);
         }  
         $p_table .= "</table>";
         $p_table .= "</div>";

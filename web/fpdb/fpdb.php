@@ -111,76 +111,84 @@
     class FPDB_User extends FPDB_Base
     {
 	    protected $inventory_q = "
-	    SELECT NAMED.*, price FROM (
-	    	SELECT namn, BEERS.beer_id, BEERS.count FROM
-           		sbl_beer
-            RIGHT JOIN (
-    			SELECT beer_id, SUM(count) AS count FROM
-                    (SELECT beer_id, SUM(amount) AS count
-                    	FROM beers_bought
-                    	GROUP BY beer_id
-            		UNION
-                    SELECT beer_id, -COUNT(beer_id) AS count
-                   		FROM beers_sold
-                   		GROUP BY beer_id) A
-                GROUP BY A.beer_id ) AS BEERS
-            ON BEERS.beer_id = sbl_beer.nr) AS NAMED
-		LEFT JOIN
-			beers_bought
-		ON beers_bought.beer_id = NAMED.beer_id
-		GROUP BY beer_id ORDER BY count DESC";
+            SELECT
+                bb.beer_id,
+                concat(sb.namn, ' ', sb.namn2) AS name,
+                sb.prisinklmoms AS price,
+                SUM(bb.count) AS count
+            FROM
+                (SELECT
+                    beer_id,
+                    SUM(amount) AS count
+                FROM
+                    beers_bought
+                GROUP BY
+                    beer_id
+                UNION ALL
+                SELECT
+                    beer_id,
+                    -COUNT(beer_id) AS count
+                FROM
+                    beers_sold
+                GROUP BY
+                    beer_id
+                ) AS bb
+            LEFT JOIN
+                sbl_beer AS sb
+            ON
+                bb.beer_id = sb.nr
+            GROUP BY
+                bb.beer_id
+            ORDER BY
+                count DESC";
 	    
     	protected $iou_q = "
             SELECT
-                transactions.user_id     AS user_id,
-                transactions.first_name  AS first_name,
-                transactions.last_name   AS last_name,
-                SUM(transactions.amount) AS assets
+                tr.user_id     AS user_id,
+                tr.first_name  AS first_name,
+                tr.last_name   AS last_name,
+                SUM(tr.amount) AS assets
             FROM
                 (SELECT
-                    sales_price.user_id     AS user_id,
-                    sales_price.first_name  AS first_name,
-                    sales_price.last_name   AS last_name,
-                    -SUM(sales_price.price) AS amount
+                    sp.user_id     AS user_id,
+                    sp.first_name  AS first_name,
+                    sp.last_name   AS last_name,
+                    -SUM(sp.price) AS amount
                 FROM
-                    sales_price
+                    sales_price AS sp
                 GROUP BY
-                    sales_price.user_id
+                    sp.user_id
                 UNION ALL
                 SELECT
-                    payments.user_id     AS user_id,
-                    null                 AS first_name,
-                    null                 AS last_name,
-                    SUM(payments.amount) AS amount
+                    pa.user_id     AS user_id,
+                    null           AS first_name,
+                    null           AS last_name,
+                    SUM(pa.amount) AS amount
                 FROM
-                    payments
+                    payments AS pa
                 GROUP BY
-                    payments.user_id
-                 ) AS transactions
-            WHERE
-                transactions.user_id LIKE %s
+                    pa.user_id
+                 ) AS tr
             GROUP BY
-                transactions.user_id
-            ORDER BY assets ASC";
+                tr.user_id
+            ORDER BY
+                assets ASC";
 
 	    protected $purchase_history_q = "
             SELECT
-                concat(sbl_beer.namn, ' ', sbl_beer.namn2) AS name,
-                beers_sold.transaction_id,
-                beers_sold.user_id,
-                beers_sold.beer_id,
-                beers_sold.timestamp,
-                sales_price.price
+                concat(sb.namn, ' ', sb.namn2) AS name,
+                bs.transaction_id,        
+                bs.user_id,
+                bs.beer_id,
+                bs.timestamp,
+                sp.price
             FROM
-                beers_sold,
-                sales_price,
-                sbl_beer
+                beers_sold  AS bs,
+                sales_price AS sp,
+                sbl_beer    AS sb
             WHERE
-                beers_sold.transaction_id = sales_price.transaction_id and
-                sales_price.beer_id = sbl_beer.nr and
-                beers_sold.user_id LIKE %s
-            ORDER BY
-                beers_sold.timestamp DESC";
+                bs.transaction_id = sp.transaction_id and
+                sp.beer_id = sb.nr";
 
         
         function __construct()
@@ -311,7 +319,7 @@
         {
             /* Systembolaget sometimes have a few duplicates in their XML file.
              * Therefore, we use REPLACE instead of INSERT to not insert
-             *duplicates. */
+             * duplicates. */
             $q = "REPLACE INTO sbl_beer (
                     nr,
                     Artikelid,

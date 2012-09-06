@@ -17,8 +17,7 @@
 
     printf("<form action=\"%s\" method=\"post\">", $_SERVER["PHP_SELF"]);
     foreach ($qres as $inventory_item) {
-        $beer_name = $inventory_item["namn"];
-        $beer_name .= " ".$inventory_item["namn2"];
+        $beer_name = $inventory_item["name"];
         $beer_id = $inventory_item["beer_id"];
         $beer_price = $inventory_item["price"] ;
         $beer_count = $inventory_item["count"];
