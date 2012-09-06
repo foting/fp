@@ -77,25 +77,25 @@
      */
     function action_inventory_get($db, $user_id)
     {
-        $qres = $db->inventory_get_all()->get_array();
+        $qres = $db->inventory_get_all()->get();
         return new API_Reply("inventory_get", $qres);
     }
 
     function action_beer_data_get($db, $beer_id)
     {
-        $qres = $db->beer_data_get($beer_id)->get_array();
+        $qres = $db->beer_data_get($beer_id)->get();
         return new API_Reply("beer_data_get", $qres);
     }
 
     function action_purchases_get($db, $user_id)
     {
-        $qres = $db->purchases_get($user_id)->get_array();
+        $qres = $db->purchases_get($user_id)->get();
         return new API_Reply("purchases_get", $qres);
     }
 
     function action_purchases_get_all($db, $user_id)
     {
-        $qres = $db->purchases_get_all()->get_array();
+        $qres = $db->purchases_get_all()->get();
         return new API_Reply("purchases_get_all", $qres);
     }
 
@@ -112,13 +112,13 @@
     
     function action_payments_get($db, $user_id)
     {
-        $qres = $db->payments_get($user_id)->get_array();
+        $qres = $db->payments_get($user_id)->get();
         return new API_Reply("payments_get_all", $qres);
     }
 
     function action_payments_get_all($db, $user_id)
     {
-        $qres = $db->payments_get_all()->get_array();
+        $qres = $db->payments_get_all()->get();
         return new API_Reply("payments_get_all", $qres);
     }
 
@@ -137,13 +137,13 @@
 
     function action_iou_get($db, $user_id)
     {
-        $qres = $db->iou_get($user_id)->get_array();
+        $qres = $db->iou_get($user_id)->get();
         return new API_Reply("iou_get", $qres);
     }
 
     function action_iou_get_all($db, $user_id)
     {
-        $qres = $db->iou_get_all()->get_array();
+        $qres = $db->iou_get_all()->get();
         return new API_Reply("iou_get_all", $qres);
     }
 

@@ -8,24 +8,24 @@
 
     class FPDB_Result implements Iterator
     {
-        private $results_array;
+        private $result;
         private $position;
 
-        function  __construct($pdo_results)
+        function  __construct($pdo_result)
         {
-            $this->results_array = $pdo_results;
+            $this->result = $pdo_result;
             $this->position = 0;
         }
 
-        public function get_array()
+        public function get()
         {
-            return $this->results_array;
+            return $this->result;
         }
 
         /* Iterator interface */
         public function current()
         {
-            return $this->results_array[$this->position];
+            return $this->result[$this->position];
         }
 
         public function next()
@@ -45,7 +45,7 @@
 
         public function valid()
         {
-            return isset($this->results_array[$this->position]);
+            return isset($this->result[$this->position]);
         }
 
     }
