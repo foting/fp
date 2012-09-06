@@ -103,7 +103,7 @@
         public function insert($query, $param = array())
         {
             $this->execute($query, $param);
-            return new FPDB_Results(array());
+            return new FPDB_Result(array());
         }
     };
 
@@ -170,7 +170,7 @@
                     pa.user_id
                  ) AS tr
             WHERE
-                tr.user_id LIKE %s
+                tr.user_id LIKE :user_id
             GROUP BY
                 tr.user_id
             ORDER BY
@@ -191,7 +191,9 @@
             WHERE
                 bs.transaction_id = sp.transaction_id and
                 sp.beer_id = sb.nr and
-                bs.user_id LIKE %s";
+                bs.user_id LIKE :user_id
+            ORDER BY
+                timestamp DESC";
 
         
         function __construct()
@@ -207,76 +209,81 @@
         public function user_get($username)
         {
             /* Assuming that username is unique */
-            $q = sprintf("SELECT * FROM users WHERE username = '%s'", $username);
-            return $this->select($q);
+            $q = "SELECT * FROM users WHERE username LIKE :username";
+            $p = array(":username" => $username);
+            return $this->select($q, $p);
         }
 
         public function user_get_all()
         {
-            return $this->select("SELECT * FROM users ORDER BY first_name");
+            return $this->user_get("%");
         }
 
 
         public function purchases_get($user_id)
         {
-            $q = sprintf($this->purchase_history_q, $user_id);
-            return $this->select($q);
+            $q = $this->purchase_history_q;
+            $p = array(":user_id" => $user_id);
+            return $this->select($q, $p);
         }
 
         public function purchases_get_all()
         {            
-            $q = sprintf($this->purchase_history_q, "'%'");
-            return $this->select($q);
+            return $this->purchases_get("%");
         }
+
 
         /* Only *_append method exposed to users */
         public function purchases_append($user_id, $beer_id)
         {
-            $q = sprintf("INSERT INTO beers_sold
-                          (user_id, beer_id)
-                          VALUES ('%d', '%d')",
-                          $user_id, $beer_id);
-            $this->insert($q);
+            $q = "INSERT INTO beers_sold (user_id, beer_id) VALUES(:user_id, :beer_id)";
+            $p = array(":user_id" => $user_id, ":beer_id" => $beer_id);
+            $this->insert($q, $p);
         }
 
 
         public function payments_get($user_id)
         {
-            $q = sprintf("SELECT * FROM payments WHERE user_id = '%s'", $user_id);
-            return $this->select($q);
+            $q = "SELECT * FROM payments WHERE user_id LIKE :user_id";
+            $p = array("user_id" => $user_id);
+            return $this->select($q, $p);
         }
 
         public function payments_get_all()
         {
-            return $this->select("SELECT * FROM payments");
+            return $this->payments_get("%");
         }
 
 
         public function inventory_get_all()
         {
-            return $this->select($this->inventory_q);
+            $q = $this->inventory_q;
+            $p = array();
+            return $this->select($q, $p);
         }
 
         public function beer_data_get($beer_id)
         {
-            return $this->select(sprintf("SELECT * FROM sbl_beer WHERE nr = %s", $beer_id));
+            $q = "SELECT * FROM sbl_beer WHERE nr LIKE :beer_id";
+            $p = array(":beer_id" => $beer_id);
+            return $this->select($q, $p);
         }
 
         public function beer_data_get_all()
         {
-            return $this->select("SELECT nr, namn, prisinklmoms FROM sbl_beer");
+            return $this->beer_data_get("%");
         }
         
         public function iou_get($user_id)
         {
-            $q = sprintf($this->iou_q, $user_id);
-            return $this->select($q);
+            $q = $this->iou_q;
+            $p = array(":user_id" => $user_id);
+            return $this->select($q, $p);
 	    }
 
         public function iou_get_all()
         {
-            $q = sprintf($this->iou_q, "'%'");
-            return $this->select($q);
+            return $this->iou_get("%");
 	    }
     };
 
@@ -293,28 +300,61 @@
 
         public function user_append($username, $password, $first_name, $last_name, $email, $phone)
         {
-            $q = sprintf("INSERT INTO users
-                 (credentials, password, username, first_name, last_name, email, phone)
-                 VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s')",
-                 CRED_USER, md5($password), $username, $first_name, $last_name, $email, $phone);
-            $this->insert($q);
+            $q = "INSERT INTO users (
+                    credentials,
+                    username,
+                    password,
+                    first_name,
+                    last_name,
+                    email,
+                    phone
+                 ) VALUES (
+                     :credentials,
+                     :username,
+                     :password,
+                     :first_name,
+                     :last_name,
+                     :email,
+                     :phone
+                 )";
+            $p = array(
+                    ":credentials" => CRED_USER,
+                    ":username" => $username,
+                    ":password" => md5($password),
+                    ":first_name" => $first_name,
+                    ":last_name" => $last_name,
+                    ":email" => $email,
+                    ":phone" => $phone
+                );
+            $this->insert($q, $p);
         }
 
         public function payments_append($user_id, $admin_id, $amount)
         {
-            $q = sprintf("INSERT INTO payments
-                         (user_id, admin_id, amount)
-                         VALUES ('%d', '%d', '%d')",
-                         $user_id, $admin_id, $amount);
-            $this->insert($q);
+            $q = "INSERT INTO payments (user_id, admin_id, amount) VALUES (:uid, :aid, :amount)";
+            $p = array(":uid" => $user_id, ":aid" => $admin_id, ":amount" => $amount);
+            $this->insert($q, $p);
         }
 
         public function inventory_append($user_id, $beer_id, $amount, $price)
         {
-            $q = sprintf("INSERT INTO beers_bought
-                          (admin_id, beer_id, amount, price)
-                          VALUES ('%d', '%d', '%d', '%.2f')",
-                          $user_id, $beer_id, $amount, $price);
+            $q = "INSERT INTO beers_bought (
+                    admin_id,
+                    beer_id,
+                    amount,
+                    price
+                 ) VALUES (
+                    :admin_id,
+                    :beer_id,
+                    :amount,
+                    :price
+                 )"; 
+            $p = array(
+                    ":admin_id" => $admin_id,
+                    ":beer_id" => $beer_id,
+                    ":amount" => $amount,
+                    ":price" => $price
+                 );
             $this->insert($q);
         }
 
