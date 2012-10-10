@@ -2,15 +2,24 @@
     include_once "header.php";
     include_once "../fpdb/fpdb.php";
 
-    $user_id = $_SESSION["user_id"];
-    $assets = 0;
+
+    function getAssets($db, $user_id)
+    {
+        try {
+            $qres = $db->iou_get($user_id);
+        } catch (FPDB_Exception $e) {
+            die($e->getMessage());
+        }
+        return $qres;
+    }
 
     /*
      * Returns the array of purchase data
      */
-    function getPurchases($db, $user_id) {
+    function getPurchases($db, $user_id)
+    {
         $qres;
-            try {
+        try {
             $qres = $db->purchases_get($user_id);
         } catch (FPDB_Exception $e) {
             die($e->getMessage());
@@ -21,16 +30,37 @@
      /*
      * Returns the array of payment data
      */
-    function getPayments($db, $user_id) {
+    function getPayments($db, $user_id)
+    {
         $qres;
-            try {
+        try {
             $qres = $db->payments_get($user_id);
         } catch (FPDB_Exception $e) {
             die($e->getMessage());
         }
         return $qres;
     }
-    
+
+    function formatAssets($qres)
+    {
+        $assets = $qres->get();
+        $assets = $assets[0]["assets"];
+
+        $p_str = "";
+        if ($assets >= 0) {
+            $p_str .= "<div class=\"assets\"><h1>I'm good!</h1>";
+            $p_str .= "Many monies in the bank:";
+            $p_str .= "<h1>" . $assets . "kr</h1></div>";
+            $p_str .= "<img class=\"face\" src=\"../images/good.png\">";
+        } else {
+            $p_str .= "<div class=\"assets\"><h1>Oh nooo!</h1> Y U NO free beer?";
+            $p_str .= "<h1>" . $assets .  "kr</h1></div>";
+            $p_str .= "<img class=\"face\" src=\"../images/bad.png\">";
+        }
+
+        return $p_str;
+    }
+
     function formatPurchases($qres)
     {
         $p_table = "";
@@ -65,40 +95,20 @@
         return $p_table;
     }
     
-    $db;
+    $user_id = $_SESSION["user_id"];
     try {
         $db = new FPDB_User();
     } catch (FPDB_Exception $e) {
         die($e->getMessage());
     }
     
-    $assets = 0;
-
+    $assets = getAssets($db, $user_id);
     $purchases = getPurchases($db, $user_id);
-    foreach ($purchases as $p)
-        $assets -= $p["price"];
     $payments = getPayments($db, $user_id);
-    foreach ($payments as $p)
-        $assets += $p["amount"];
         
-    if ($assets >= 0) {
-        printf("<div class=\"assets\"><h1>I'm good!</h1>");
-        printf("Many monies in the bank:");
-        printf("<h1>%d kr</h1></div>", $assets);
-        printf("<img class=\"face\" src=\"../images/good.png\">");
-    }
-    else
-        {
-        printf("<div class=\"assets\"><h1>Oh nooo!</h1> Y U NO free beer?");
-        printf("<h1>%d kr</h1></div>", $assets);
-        printf("<img class=\"face\" src=\"../images/bad.png\">");
-    }
-    
-
-        /* List purchases */
+   
+    echo formatAssets($assets);
     echo formatPurchases($purchases);
-    
-    /* List payments */
     echo formatPayments($payments);
     
     include_once "footer.php"; 

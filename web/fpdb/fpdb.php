@@ -150,10 +150,10 @@
                 SUM(tr.amount) AS assets
             FROM
                 (SELECT
-                    sp.user_id     AS user_id,
-                    sp.first_name  AS first_name,
-                    sp.last_name   AS last_name,
-                    -SUM(sp.price) AS amount
+                    sp.user_id               AS user_id,
+                    sp.first_name            AS first_name,
+                    sp.last_name             AS last_name,
+                    -SUM(fp_price(sp.price)) AS amount
                 FROM
                     sales_price AS sp
                 GROUP BY
