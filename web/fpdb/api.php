@@ -223,7 +223,7 @@
                 break;
 
             case "payments_append";
-                check_credentials($cred, CRED_USER);
+                check_credentials($cred, CRED_ADMIN);
                 $reply = action_payments_append($db, $user);
                 break;
 
