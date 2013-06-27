@@ -1,40 +1,31 @@
 <?php
 
     include_once "../include/credentials.php";
-    try {
-        include_once "SQL_mysqli.php";    
-    } catch (Exception $e) {
-        die($e);
-    }
-    
 
     class FPDB_Exception extends Exception {
 
     }
 
-    class FPDB_Results implements Iterator
+    class FPDB_Result implements Iterator
     {
-        private $results_array;
+        private $result;
         private $position;
 
-        function  __construct($sql_results)
+        function  __construct($pdo_result)
         {
-            $this->results_array = array();
-            while ($iter = sql_fetch_assoc($sql_results)) {
-                array_push($this->results_array, $iter);
-            }
+            $this->result = $pdo_result;
             $this->position = 0;
         }
 
-        public function get_array()
+        public function get()
         {
-            return $this->results_array;
+            return $this->result;
         }
 
         /* Iterator interface */
         public function current()
         {
-            return $this->results_array[$this->position];
+            return $this->result[$this->position];
         }
 
         public function next()
@@ -54,16 +45,14 @@
 
         public function valid()
         {
-            return isset($this->results_array[$this->position]);
+            return isset($this->result[$this->position]);
         }
 
     }
 
     class FPDB_Base
     {
-        private $link = False;
-        private $query_ = False;
-        private $result_ = False;
+        private $dbh = null;
         private $position = 0;
 
         function __construct($dbn)
@@ -75,31 +64,46 @@
 
         function __destruct()
         {
-            sql_close($this->link);
+            $this->dbh = null;
         }
 
-        public function connect($dbn)
+        protected function connect($dbn)
         {
-            if ($this->link) {
+            if ($this->dbh) {
                 throw new FPDB_Exception("Error: FPDB_Base: Already connected.");
             }
+            extract($dbn);
 
-            $this->link = sql_connect(
-                $dbn["server"], $dbn["username"], $dbn["password"], $dbn["database"]);
-
-            if (!$this->link) {
-                throw new FPDB_Exception(sql_error($this->link));
+            try {
+                $this->dbh = new PDO("mysql:dbname=$database;host=$server", $username, $password);
+                $this->dbh->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            } catch (PDOException $e) {
+                throw new FPDB_Exception($e->getMessage);
             }
         }
 
-        public function query($query)
+        private function execute($query, $param)
         {
-            $results = sql_query($this->link, $query);
-            if (!$results) {
-                throw new FPDB_Exception(sql_error($this->link) . ": " . $query);
+            try {
+                $sth = $this->dbh->prepare($query);
+                $sth->execute($param);
+            } catch (PDOException $e) {
+                throw new FPDB_Exception($e->getMessage());
             }
-            
-            return new FPDB_Results($results);
+            return $sth;
+        }
+
+        public function select($query, $param = array())
+        {
+            $sth = $this->execute($query, $param);
+            $res = $sth->fetchAll(PDO::FETCH_ASSOC);
+            return new FPDB_Result($res);
+        }
+
+        public function insert($query, $param = array())
+        {
+            $this->execute($query, $param);
+            return new FPDB_Result(array());
         }
     };
 
@@ -107,104 +111,90 @@
     class FPDB_User extends FPDB_Base
     {
 	    protected $inventory_q = "
-	    SELECT NAMED.*, price FROM (
-	    	SELECT namn, BEERS.beer_id, BEERS.count FROM
-           		sbl_beer
-            RIGHT JOIN (
-    			SELECT beer_id, SUM(count) AS count FROM
-                    (SELECT beer_id, SUM(amount) AS count
-                    	FROM beers_bought
-                    	GROUP BY beer_id
-            		UNION
-                    SELECT beer_id, -COUNT(beer_id) AS count
-                   		FROM beers_sold
-                   		GROUP BY beer_id) A
-                GROUP BY A.beer_id ) AS BEERS
-            ON BEERS.beer_id = sbl_beer.nr) AS NAMED
-		LEFT JOIN
-			beers_bought
-		ON beers_bought.beer_id = NAMED.beer_id
-		GROUP BY beer_id ORDER BY count DESC";
+            SELECT
+                bb.beer_id,
+                concat(sb.namn, ' ', sb.namn2) AS name,
+                sb.prisinklmoms AS price,
+                SUM(bb.count) AS count
+            FROM
+                (SELECT
+                    beer_id,
+                    SUM(amount) AS count
+                FROM
+                    beers_bought
+                GROUP BY
+                    beer_id
+                UNION ALL
+                SELECT
+                    beer_id,
+                    -COUNT(beer_id) AS count
+                FROM
+                    beers_sold
+                GROUP BY
+                    beer_id
+                ) AS bb
+            LEFT JOIN
+                sbl_beer AS sb
+            ON
+                bb.beer_id = sb.nr
+            GROUP BY
+                bb.beer_id
+            ORDER BY
+                count DESC";
 	    
     	protected $iou_q = "
-			SELECT users.user_id, first_name, last_name, assets FROM users RIGHT JOIN (
-                SELECT user_id, SUM(assets) AS assets FROM (
-                    SELECT user_id, SUM(amount) AS assets
-                            FROM payments GROUP BY user_id
-                    UNION
-                    SELECT user_id, -SUM(price) FROM (
-                            SELECT * FROM (
-                                SELECT
-                                    beers_sold.user_id,
-                                    beers_sold.transaction_id,
-                                    beers_bought.price #,
-                                FROM beers_sold LEFT JOIN beers_bought
-                                    ON beers_bought.beer_id = beers_sold.beer_id
-                                    WHERE beers_sold.timestamp > beers_bought.timestamp
-                                    ORDER BY beers_bought.timestamp DESC
-                                ) AS T
-                            GROUP BY T.transaction_id
-                    ) AS S GROUP BY user_id
-                ) AS TOTAL_ASSETS GROUP BY user_id
-            ) AS DEBT_LIST
-            ON users.user_id = DEBT_LIST.user_id
-            WHERE DEBT_LIST.user_id='%s'";
-    	    
-	    protected $iou_all_q = "
-	        SELECT username, first_name, last_name, assets FROM users RIGHT JOIN (
-                SELECT user_id, SUM(assets) AS assets FROM (
-                    SELECT user_id, SUM(amount) AS assets
-                            FROM payments GROUP BY user_id
-                    UNION
-                    SELECT user_id, -SUM(price) FROM (
-                            SELECT * FROM (
-                                SELECT
-                                    beers_sold.user_id,
-                                    beers_sold.transaction_id,
-                                    beers_bought.price #,
-                                FROM beers_sold LEFT JOIN beers_bought
-                                    ON beers_bought.beer_id = beers_sold.beer_id
-                                    WHERE beers_sold.timestamp > beers_bought.timestamp
-                                    ORDER BY beers_bought.timestamp DESC
-                                ) AS T
-                            GROUP BY T.transaction_id
-                    ) AS S GROUP BY user_id
-                ) AS TOTAL_ASSETS GROUP BY user_id
-            ) AS DEBT_LIST
-            ON users.user_id = DEBT_LIST.user_id
-            ORDER BY assets ASC";
+            SELECT
+                tr.user_id     AS user_id,
+                tr.first_name  AS first_name,
+                tr.last_name   AS last_name,
+                SUM(tr.amount) AS assets
+            FROM
+                (SELECT
+                    sp.user_id               AS user_id,
+                    sp.first_name            AS first_name,
+                    sp.last_name             AS last_name,
+                    -SUM(fp_price(sp.price)) AS amount
+                FROM
+                    sales_price AS sp
+                GROUP BY
+                    sp.user_id
+                UNION ALL
+                SELECT
+                    pa.user_id     AS user_id,
+                    null           AS first_name,
+                    null           AS last_name,
+                    SUM(pa.amount) AS amount
+                FROM
+                    payments AS pa
+                GROUP BY
+                    pa.user_id
+                 ) AS tr
+            WHERE
+                tr.user_id LIKE :user_id
+            GROUP BY
+                tr.user_id
+            ORDER BY
+                assets ASC";
 
 	    protected $purchase_history_q = "
-    		SELECT namn, Purchases.* FROM
-            	sbl_beer
-            RIGHT JOIN (
-            	SELECT * FROM (
-            		SELECT
-            			beers_sold.*,
-            			beers_bought.price
-            		FROM beers_sold LEFT JOIN beers_bought
-            		ON beers_bought.beer_id = beers_sold.beer_id
-            		WHERE beers_sold.timestamp > beers_bought.timestamp
-            		ORDER BY beers_bought.timestamp DESC
-                ) AS T WHERE T.user_id = %s
-        		GROUP BY T.transaction_id ORDER BY T.timestamp DESC) AS Purchases
-    		ON Purchases.beer_id = sbl_beer.nr";
-	            
-        protected $purchase_history_all_q = "
-        	SELECT namn, Purchases.* FROM
-            	sbl_beer
-            RIGHT JOIN (
-        	SELECT * FROM (
-        		SELECT
-        			beers_sold.*,
-        			beers_bought.price
-        		FROM beers_sold LEFT JOIN beers_bought
-        		ON beers_bought.beer_id = beers_sold.beer_id
-        		WHERE beers_sold.timestamp > beers_bought.timestamp
-        		ORDER BY beers_bought.timestamp DESC
-            ) AS T
-    		GROUP BY T.transaction_id ORDER BY T.timestamp) AS Purchases
-    		ON Purchases.beer_id = sbl_beer.nr";
+            SELECT
+                concat(sb.namn, ' ', sb.namn2) AS name,
+                bs.transaction_id,        
+                bs.user_id,
+                bs.beer_id,
+                bs.timestamp,
+                sp.price
+            FROM
+                beers_sold  AS bs,
+                sales_price AS sp,
+                sbl_beer    AS sb
+            WHERE
+                bs.transaction_id = sp.transaction_id and
+                sp.beer_id = sb.nr and
+                bs.user_id LIKE :user_id
+            ORDER BY
+                timestamp DESC";
+
         
         function __construct()
         {
@@ -219,74 +209,81 @@
         public function user_get($username)
         {
             /* Assuming that username is unique */
-            $q = sprintf("SELECT * FROM users WHERE username = '%s'", $username);
-            return $this->query($q);
+            $q = "SELECT * FROM users WHERE username LIKE :username";
+            $p = array(":username" => $username);
+            return $this->select($q, $p);
         }
 
         public function user_get_all()
         {
-            return $this->query("SELECT * FROM users ORDER BY first_name");
+            return $this->user_get("%");
         }
 
 
         public function purchases_get($user_id)
         {
-            $q = sprintf($this->purchase_history_q, $user_id);
-            return $this->query($q);
+            $q = $this->purchase_history_q;
+            $p = array(":user_id" => $user_id);
+            return $this->select($q, $p);
         }
 
         public function purchases_get_all()
         {            
-            return $this->query($this->purchase_history_all_q);
+            return $this->purchases_get("%");
         }
+
 
         /* Only *_append method exposed to users */
         public function purchases_append($user_id, $beer_id)
         {
-            $q = sprintf("INSERT INTO beers_sold
-                          (user_id, beer_id)
-                          VALUES ('%d', '%d')",
-                          $user_id, $beer_id);
-            $this->query($q);
+            $q = "INSERT INTO beers_sold (user_id, beer_id) VALUES(:user_id, :beer_id)";
+            $p = array(":user_id" => $user_id, ":beer_id" => $beer_id);
+            $this->insert($q, $p);
         }
 
 
         public function payments_get($user_id)
         {
-            $q = sprintf("SELECT * FROM payments WHERE user_id = '%s'", $user_id);
-            return $this->query($q);
+            $q = "SELECT * FROM payments WHERE user_id LIKE :user_id";
+            $p = array("user_id" => $user_id);
+            return $this->select($q, $p);
         }
 
         public function payments_get_all()
         {
-            return $this->query("SELECT * FROM payments");
+            return $this->payments_get("%");
         }
 
 
         public function inventory_get_all()
         {
-            return $this->query($this->inventory_q);
+            $q = $this->inventory_q;
+            $p = array();
+            return $this->select($q, $p);
         }
 
         public function beer_data_get($beer_id)
         {
-            return $this->query(sprintf("SELECT * FROM sbl_beer WHERE nr = %s", $beer_id));
+            $q = "SELECT * FROM sbl_beer WHERE nr LIKE :beer_id";
+            $p = array(":beer_id" => $beer_id);
+            return $this->select($q, $p);
         }
 
         public function beer_data_get_all()
         {
-            return $this->query("SELECT nr, namn, prisinklmoms FROM sbl_beer");
+            return $this->beer_data_get("%");
         }
         
         public function iou_get($user_id)
         {
-            $q = sprintf($this->iou_q, $user_id);
-            return $this->query($q);
+            $q = $this->iou_q;
+            $p = array(":user_id" => $user_id);
+            return $this->select($q, $p);
 	    }
 
         public function iou_get_all()
         {
-            return $this->query($this->iou_all_q);
+            return $this->iou_get("%");
 	    }
     };
 
@@ -303,34 +300,70 @@
 
         public function user_append($username, $password, $first_name, $last_name, $email, $phone)
         {
-            $q = sprintf("INSERT INTO users
-                 (credentials, password, username, first_name, last_name, email, phone)
-                 VALUES (%d, '%s', '%s', '%s', '%s', '%s', '%s')",
-                 CRED_USER, md5($password), $username, $first_name, $last_name, $email, $phone);
-            $this->query($q);
+            $q = "INSERT INTO users (
+                    credentials,
+                    username,
+                    password,
+                    first_name,
+                    last_name,
+                    email,
+                    phone
+                 ) VALUES (
+                     :credentials,
+                     :username,
+                     :password,
+                     :first_name,
+                     :last_name,
+                     :email,
+                     :phone
+                 )";
+            $p = array(
+                    ":credentials" => CRED_USER,
+                    ":username" => $username,
+                    ":password" => md5($password),
+                    ":first_name" => $first_name,
+                    ":last_name" => $last_name,
+                    ":email" => $email,
+                    ":phone" => $phone
+                );
+            $this->insert($q, $p);
         }
 
         public function payments_append($user_id, $admin_id, $amount)
         {
-            $q = sprintf("INSERT INTO payments
-                         (user_id, admin_id, amount)
-                         VALUES ('%d', '%d', '%d')",
-                         $user_id, $admin_id, $amount);
-            $this->query($q);
+            $q = "INSERT INTO payments (user_id, admin_id, amount) VALUES (:uid, :aid, :amount)";
+            $p = array(":uid" => $user_id, ":aid" => $admin_id, ":amount" => $amount);
+            $this->insert($q, $p);
         }
 
         public function inventory_append($user_id, $beer_id, $amount, $price)
         {
-            $q = sprintf("INSERT INTO beers_bought
-                          (admin_id, beer_id, amount, price)
-                          VALUES ('%d', '%d', '%d', '%.2f')",
-                          $user_id, $beer_id, $amount, $price);
-            $this->query($q);
+            $q = "INSERT INTO beers_bought (
+                    admin_id,
+                    beer_id,
+                    amount,
+                    price
+                 ) VALUES (
+                    :admin_id,
+                    :beer_id,
+                    :amount,
+                    :price
+                 )"; 
+            $p = array(
+                    ":admin_id" => $admin_id,
+                    ":beer_id" => $beer_id,
+                    ":amount" => $amount,
+                    ":price" => $price
+                 );
+            $this->insert($q);
         }
 
     	public function sbl_append($beer)
         {
-            $q = "INSERT INTO sbl_beer (
+            /* Systembolaget sometimes have a few duplicates in their XML file.
+             * Therefore, we use REPLACE instead of INSERT to not insert
+             * duplicates. */
+            $q = "REPLACE INTO sbl_beer (
                     nr,
                     Artikelid,
                     Varnummer,
@@ -378,17 +411,17 @@
                     \"$beer->Koscher\"
                 )";
 
-            $this->query($q);
+            $this->insert($q);
         }
 
         public function sbl_nuke()
         {
             $this->query("TRUNCATE TABLE sbl_beer");
-	}
+	    }
 	
-	public function pub_price($sbl_price) {
-	    return (floor(($sbl_price + 1.0) / 5) + 1) * 5;
-	}
+	    public function pub_price($sbl_price) {
+	        return (floor(($sbl_price + 1.0) / 5) + 1) * 5;
+	    }   
     };
 
     /* Temporarily putting this functionality here */

@@ -14,9 +14,11 @@ function print_and_exit {
 wget $URL -O $XML_FILE
 [ "$?" == "0" ] || print_and_exit "wget"
 
-rm sbl-latest.xml
+# Setup soft link to point to latest version
+rm sbl-latest.xml 2>/dev/null
 ln -s $XML_FILE sbl-latest.xml
 
-sed -e "s#\(<[^>]*>\)#\1\n#g" -i $XML_FILE
+# Remove double quotes around strings
+sed 's#&quot;##g' -i $XML_FILE
 [ "$?" == "0" ] || print_and_exit "sed"
 

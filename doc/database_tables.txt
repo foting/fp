@@ -1,35 +1,133 @@
-This file documents the database tables used for this project. It shows the SQL
-command to create the table and a short descriptions of each field.
+/* This file documents the database tables used for this project. It shows the SQL
+command to create the table and (in a perfect world) a short descriptions of each field. */
 
-CREATE TABLE users (
-    user_id     INT AUTO_INCREMENT PRIMARY KEY,  /* User ID */
-    credentials TINYINT,                         /* Users credentials 0:admin 3:customer */
-    password    CHAR(32),                        /* md5 hashed password */
-    username    CHAR(255),
-    first_name  CHAR(255),
-    last_name   CHAR(255),
-    email       CHAR(255),
-    phone       CHAR(32)
+/* 
+ * Tables 
+ */
+
+CREATE TABLE `users` (
+  `user_id` int(11) NOT NULL AUTO_INCREMENT,
+  `credentials` tinyint(4) DEFAULT NULL,
+  `password` char(32) DEFAULT NULL,
+  `username` char(255) DEFAULT NULL,
+  `first_name` char(255) DEFAULT NULL,
+  `last_name` char(255) DEFAULT NULL,
+  `email` char(255) DEFAULT NULL,
+  `phone` char(32) DEFAULT NULL,
+  PRIMARY KEY (`user_id`)
 );
 
-CREATE TABLE beers_sold (
-    user_id     INT,                    /* User the beer was sold to */
-    beer_id     INT,                    /* Id of the sold beer */
-    timestamp   TIMESTAMP DEFAULT NOW()
+CREATE TABLE `beers_bought` (
+  `transaction_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `admin_id` int(11) DEFAULT NULL,
+  `beer_id` int(11) NOT NULL,
+  `amount` int(11) NOT NULL,
+  `price` decimal(6,2) NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`transaction_id`)
 );
 
-CREATE TABLE beers_bought (
-    admin_id    INT,                    /* Admin who bought the beers */
-    beer_id     INT,                    /* Id of bought beer */
-    amount      INT,                    /* How many were bought */
-    price       DECIMAL(6,2),           /* Price (SEK) the day they were bougth */
-    timestamp   TIMESTAMP DEFAULT NOW()
+CREATE TABLE `beers_sold` (
+  `transaction_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `beer_id` int(11) NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`transaction_id`)
 );
 
-CREATE TABLE payments (
-    user_id     INT,                    /* User who made payment */
-    admin_id    INT,                    /* Admin that accepted payment */
-    amount      INT,                    /* Amount user payed (SEK) */
-    timestamp   TIMESTAMP DEFAULT NOW()
+CREATE TABLE `payments` (
+  `transaction_id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `admin_id` int(11) NOT NULL,
+  `amount` int(11) NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`transaction_id`)
 );
+
+CREATE TABLE `sbl_beer` (
+  `nr` int(12) unsigned NOT NULL,
+  `artikelid` int(12) unsigned DEFAULT NULL,
+  `varnummer` int(12) unsigned DEFAULT NULL,
+  `namn` varchar(50) DEFAULT NULL,
+  `namn2` varchar(50) DEFAULT NULL,
+  `prisinklmoms` double(7,2) unsigned DEFAULT NULL,
+  `volymiml` int(12) unsigned DEFAULT NULL,
+  `prisperliter` double(7,2) unsigned DEFAULT NULL,
+  `saljstart` varchar(16) DEFAULT NULL,
+  `slutlev` varchar(30) DEFAULT NULL,
+  `varugrupp` varchar(30) DEFAULT NULL,
+  `forpackning` varchar(30) DEFAULT NULL,
+  `forslutning` varchar(30) DEFAULT NULL,
+  `ursprung` varchar(40) DEFAULT NULL,
+  `ursprunglandnamn` varchar(30) DEFAULT NULL,
+  `producent` varchar(30) DEFAULT NULL,
+  `leverantor` varchar(30) DEFAULT NULL,
+  `argang` varchar(10) DEFAULT NULL,
+  `provadargang` varchar(10) DEFAULT NULL,
+  `alkoholhalt` varchar(10) DEFAULT NULL,
+  `modul` varchar(20) DEFAULT NULL,
+  `sortiment` varchar(20) DEFAULT NULL,
+  `ekologisk` tinyint(1) unsigned DEFAULT NULL,
+  `koscher` tinyint(1) unsigned DEFAULT NULL,
+  PRIMARY KEY (`nr`)
+);
+
+
+/*
+ * Functions
+ */
+
+DELIMITER ;;
+CREATE DEFINER=`fpdb_adm_test`@`%` FUNCTION `fp_price`(price INT) RETURNS int(11)
+    DETERMINISTIC
+RETURN (floor((price + 1.0) / 5) + 1) * 5 ;;
+DELIMITER ;
+
+
+/*
+ * Views
+ */
+
+CREATE ALGORITHM=UNDEFINED
+    DEFINER=`fpdb_adm_test`@`%` SQL SECURITY DEFINER
+    VIEW `sales_times` AS
+    SELECT `bs`.`transaction_id` AS `transaction_id`,
+            `bs`.`user_id` AS `user_id`,
+            `bs`.`beer_id` AS `beer_id`,
+            `bs`.`timestamp` AS `time_sold`,
+            (SELECT max(`bb`.`timestamp`)
+            FROM `beers_bought` `bb` 
+            WHERE ((`bb`.`beer_id` = `bs`.`beer_id`)
+                AND (`bb`.`timestamp` <= `bs`.`timestamp`)))
+            AS `time_bought` 
+    FROM `beers_sold` `bs` 
+    ORDER BY `bs`.`user_id`;
+
+CREATE ALGORITHM=UNDEFINED
+    DEFINER=`fpdb_adm_test`@`%` SQL SECURITY DEFINER
+    VIEW `sales_price` AS 
+    SELECT `sales_times`.`transaction_id` AS `transaction_id`,
+            `sales_times`.`user_id` AS `user_id`,
+            `users`.`first_name` AS `first_name`,
+            `users`.`last_name` AS `last_name`,
+            `sales_times`.`beer_id` AS `beer_id`,
+            `beers_bought`.`price` AS `price`,
+            `sales_times`.`time_sold` AS `time_sold`,
+            `sales_times`.`time_bought` AS `time_bought`
+    FROM ((`beers_bought` JOIN `sales_times`) JOIN `users`) 
+    WHERE ((`beers_bought`.`timestamp` = `sales_times`.`time_bought`)
+        AND (`sales_times`.`user_id` = `users`.`user_id`));
+
+CREATE ALGORITHM=UNDEFINED
+    DEFINER=`fpdb_adm_test`@`%` SQL SECURITY DEFINER
+    VIEW `sales_comprehensive` AS 
+    SELECT `sp`.`transaction_id` AS `transaction_id`,
+            concat(`sp`.`first_name`,' ',`sp`.`last_name`) AS `user_fullname`,
+            `sp`.`time_sold` AS `time_sold`,`st`.`beer_id` AS `beer_id`,
+            concat(`sbl`.`namn`,' ',`sbl`.`namn2`) AS `beer_name`,
+            `sp`.`price` AS `price_in`,`fp_price`(`sp`.`price`) AS `price_out`
+    FROM ((`sales_price` `sp` JOIN `sales_times` `st`) JOIN `sbl_beer` `sbl`)
+    WHERE ((`sp`.`transaction_id` = `st`.`transaction_id`)
+        AND (`sbl`.`nr` = `st`.`beer_id`)) 
+    ORDER BY `sp`.`transaction_id`;
 

@@ -24,8 +24,7 @@
 
         /* For each beer in inventory, insert row a in the table */
         foreach ($qres as $inventory_item) {
-            $beer_name = $inventory_item["namn"];
-            $beer_name .= " ".$inventory_item["namn2"];
+            $beer_name = $inventory_item["name"];
             $beer_id = $inventory_item["beer_id"];
             $count = $inventory_item["count"];
 

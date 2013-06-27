@@ -77,55 +77,55 @@
      */
     function action_inventory_get($db, $user_id)
     {
-        $qres = $db->inventory_get_all()->get_array();
+        $qres = $db->inventory_get_all()->get();
         return new API_Reply("inventory_get", $qres);
     }
 
     function action_beer_data_get($db, $beer_id)
     {
-        $qres = $db->beer_data_get($beer_id)->get_array();
+        $qres = $db->beer_data_get($beer_id)->get();
         return new API_Reply("beer_data_get", $qres);
     }
 
     function action_purchases_get($db, $user_id)
     {
-        $qres = $db->purchases_get($user_id)->get_array();
+        $qres = $db->purchases_get($user_id)->get();
         return new API_Reply("purchases_get", $qres);
     }
 
     function action_purchases_get_all($db, $user_id)
     {
-        $qres = $db->purchases_get_all()->get_array();
+        $qres = $db->purchases_get_all()->get();
         return new API_Reply("purchases_get_all", $qres);
     }
 
     function action_purchases_append($db, $user_id)
     {
-        $beer_id = $_GET["beer_id"];
+        $beer_id = $_REQUEST["beer_id"];
         if (!$beer_id) {
             return_error(ERROR_ARGUMENTS);
         }
         $db->purchases_append($user_id, $beer_id);
-        return new API_Reply("empty");
+        return new API_Reply("purchases_append");
     }
 
     
     function action_payments_get($db, $user_id)
     {
-        $qres = $db->payments_get($user_id)->get_array();
-        return new API_Reply("payments_get_all", $qres);
+        $qres = $db->payments_get($user_id)->get();
+        return new API_Reply("payments_get", $qres);
     }
 
     function action_payments_get_all($db, $user_id)
     {
-        $qres = $db->payments_get_all()->get_array();
+        $qres = $db->payments_get_all()->get();
         return new API_Reply("payments_get_all", $qres);
     }
 
     function action_payments_append($db, $admin_id)
     {
-        $user_id = $_GET["user_id"];
-        $amount  = $_GET["amount"];
+        $user_id = $_REQUEST["user_id"];
+        $amount  = $_REQUEST["amount"];
         if (!$user_id || !$amount) {
             return_error(ERROR_ARGUMENTS);
         }
@@ -137,19 +137,19 @@
 
     function action_iou_get($db, $user_id)
     {
-        $qres = $db->iou_get($user_id)->get_array();
+        $qres = $db->iou_get($user_id)->get();
         return new API_Reply("iou_get", $qres);
     }
 
     function action_iou_get_all($db, $user_id)
     {
-        $qres = $db->iou_get_all()->get_array();
+        $qres = $db->iou_get_all()->get();
         return new API_Reply("iou_get_all", $qres);
     }
 
 
-    $username = $_GET["username"];
-    $password = $_GET["password"];
+    $username = $_REQUEST["username"];
+    $password = $_REQUEST["password"];
 
     if (!$username || !$password) {
         return_error(ERROR_ARGUMENTS);
@@ -184,7 +184,7 @@
         return_error(ERROR_DATABASE);
     }
 
-    $action = $_GET["action"];
+    $action = $_REQUEST["action"];
     if (!$action) {
         return_error(ERROR_ARGUMENTS);
     }
@@ -239,7 +239,7 @@
             case "beer_data_get":
                 //currently not used. Need to think about password passing in javascript
                 check_credentials($cred, CRED_USER);
-                $reply = action_beer_data_get($db, $_GET["beer_id"]);
+                $reply = action_beer_data_get($db, $_REQUEST["beer_id"]);
                 break;
 
             default:
